@@ -1,2 +1,2 @@
 # KillifishUrbanForested
-killifish sequencing data for urban and forested area
+killifish rna sequencing data for urban and forested area
