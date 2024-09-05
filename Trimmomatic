@@ -18,8 +18,8 @@ module load trimmomatic/0.39
 
 java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar\ 
 PE -threads 6 -phred33\ 
-/home/aubaaf001/TSCAR/TSCAR_1.fq.gz /home/aubaaf001/TSCAR/TSCAR_2.fq.gz\ 
-TSCARfiltered_1paired.fq.gz TSCARfiltered_1unpaired.fq.gz  TSCARfiltered_2paired.fq.gz TSCARfiltered_2unpaired.fq.gz\
+/home/aubadc002/killifish/fastqc2/W3C3_B_1.fq.gz /home/aubadc002/killifish/fastqc2/W3C3_B_2.fq.gz\ 
+W3C3B1filtered_1paired.fq.gz W3C3B1filtered_1unpaired.fq.gz  W3C3B2filtered_2paired.fq.gz W3C3B2filtered_2unpaired.fq.gz\
 ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
 
 exit
