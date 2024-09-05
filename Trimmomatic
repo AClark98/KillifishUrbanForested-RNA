@@ -13,7 +13,7 @@ module load trimmomatic/0.39
 ##Remove reads containing N > 10% (N represents the base cannot be determined)-->LEADING:10 TRAILING:10
 ##Remove read containign low quality (Qscore<=5) base which is over 50% of the total base
 ##HeadCrop:10 will remove the first 10 bases from the start of the read.
-##Sliding window:5:30 every 5 bases the program will evaluate the quality of these bases and remove everythign under a quality of 30
+##Sliding window:5:30 every 5 bases the program will evaluate the quality of these bases and remove everything under a quality of 30
 
 
 java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar\ 
