@@ -1,0 +1,24 @@
+#!/bin/bash
+
+##This script is to trim sequencing adapters and low quality regions from the sequence read data with Trimmomatic
+##Input Data Pair-end reads (PE): Raw R1 & R2 reads (FASTQ); Adapter sequences to remove (FASTA)
+##Output: Trimmed R1 & R2 paired and unpaired reads (FASTQ)
+
+##load program
+module load trimmomatic/0.39
+
+
+##run program for my data
+##Remove adapters --> ILLUMINACLIP:adapters.fa:2:35:10
+##Remove reads containing N > 10% (N represents the base cannot be determined)-->LEADING:10 TRAILING:10
+##Remove read containing low quality (Qscore<=5) base which is over 50% of the total base
+##HeadCrop:10 will remove the first 10 bases from the start of the read.
+##Sliding window:5:30 every 5 bases the program will evaluate the quality of these bases and remove everything under a quality of 30
+
+
+java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc/W1/W1C1_B_1.fq.gz /home/aubadc002/killifish/fastqc/W1/W1C1_B_2.fq.gz W1C1B1filtered_1paired.fq W1C1B1filtered_1unpaired.fq  W1C1B2filtered_2paired.fq W1C11B2filtered_2unpaired.fq ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
+java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc/W1/W1C2_B_1.fq.gz /home/aubadc002/killifish/fastqc/W1/W1C2_B_2.fq.gz W1C2B1filtered_1paired.fq W1C2B1filtered_1unpaired.fq  W1C2B2filtered_2paired.fq W1C2B2filtered_2unpaired.fq ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
+java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc/W1/W1C3_B2_1.fq.gz /home/aubadc002/killifish/fastqc/W1/W1C3_B2_2.fq.gz W1C3B21filtered_1paired.fq W1C3B21filtered_1unpaired.fq  W1C3B22filtered_2paired.fq W1C3B22filtered_2unpaired.fq ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
+java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc/W1/W1C4_B_1.fq.gz /home/aubadc002/killifish/fastqc/W1/W1C4_B_2.fq.gz W1C4B1filtered_1paired.fq W1C4B1filtered_1unpaired.fq  W1C4B2filtered_2paired.fq W1C4B2filtered_2unpaired.fq ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
+
+exit
