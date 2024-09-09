@@ -16,7 +16,7 @@ module load trimmomatic/0.39
 ##Sliding window:5:30 every 5 bases the program will evaluate the quality of these bases and remove everything under a quality of 30
 
 
-java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc2/W3C3_B_1.fq.gz /home/aubadc002/killifish/fastqc2/W3C3_B_2.fq.gz\  W3C3B1filtered_1paired.fq.gz W3C3B1filtered_1unpaired.fq.gz  W3C3B2filtered_2paired.fq.gz W3C3B2filtered_2unpaired.fq.gz\ ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
+java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar PE -threads 6 -phred33 /home/aubadc002/killifish/fastqc/W3/W3C3_B_1.fq.gz /home/aubadc002/killifish/fastqc/W3/W3C3_B_2.fq.gz W3C3B1filtered_1paired.fq W3C3B1filtered_1unpaired.fq  W3C3B2filtered_2paired.fq W3C3B2filtered_2unpaired.fq ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
 
 exit
 
