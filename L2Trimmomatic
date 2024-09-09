@@ -18,8 +18,8 @@ module load trimmomatic/0.39
 
 java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar\ 
 PE -threads 6 -phred33\ 
-/home/aubadc002/killifish/fastqc/*_B_1.fq.gz /home/aubadc002/killifish/fastqc/*_B_2.fq.gz\ 
-L2U1B1filtered_1paired.fq.gz L2U1B1filtered_1unpaired.fq.gz  L2U1B2filtered_2paired.fq.gz L2U1B2filtered_2unpaired.fq.gz  L2U2B1filtered_1paired.fq.gz L2U2B1filtered_1unpaired.fq.gz  L2U2B2filtered_2paired.fq.gz L2U2B2filtered_2unpaired.fq.gz  L2U3B1filtered_1paired.fq.gz L2U3B1filtered_1unpaired.fq.gz  L2U3B2filtered_2paired.fq.gz L2U3B2filtered_2unpaired.fq.gz  L2U4B1filtered_1paired.fq.gz L2U4B1filtered_1unpaired.fq.gz  L2U4B2filtered_2paired.fq.gz L2U4B2filtered_2unpaired.fq.gz  L2U5B1filtered_1paired.fq.gz L2U5B1filtered_1unpaired.fq.gz  L2U5B2filtered_2paired.fq.gz L2U5B2filtered_2unpaired.fq.gz\
+/home/aubadc002/killifish/fastqc/*1.fq.gz /home/aubadc002/killifish/fastqc/*2.fq.gz\ 
+L2U1B1filtered_1paired.fq L2U1B1filtered_1unpaired.fq  L2U1B2filtered_2paired.fq L2U1B2filtered_2unpaired.fq  L2U2B1filtered_1paired.fq L2U2B1filtered_1unpaired.fq  L2U2B2filtered_2paired.fq L2U2B2filtered_2unpaired.fq  L2U3B1filtered_1paired.fq L2U3B1filtered_1unpaired.fq  L2U3B2filtered_2paired.fq L2U3B2filtered_2unpaired.fq  L2U4B1filtered_1paired.fq L2U4B1filtered_1unpaired.fq  L2U4B2filtered_2paired.fq L2U4B2filtered_2unpaired.fq  L2U5B1filtered_1paired.fq L2U5B1filtered_1unpaired.fq  L2U5B2filtered_2paired.fq L2U5B2filtered_2unpaired.fq\
 ILLUMINACLIP:adapters.fa:2:35:10 HEADCROP:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:30 MINLEN:36
 
 exit
