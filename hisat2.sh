@@ -23,7 +23,7 @@ what is the command line?
 # Most genomes that have come out recently will have their annotation information in GFF format, which is slightly different. You can convert between GFF and GTF format using the program gffread. There's great tutorials for this on the internet!
 
 # Identify your splice sites by running:
-# hisat2_extract_exons.py F_heteroclitus_genannotation.gtf > splice_sites.hisat
+# hisat2_extract_splice_sites.py F_heteroclitus_genannotation.gtf > splice_sites.hisat
 
 # Identify your exons by running:
 # hisat2_extract_exons.py F_heteroclitus_genannotation.gtf > exons.hisat
