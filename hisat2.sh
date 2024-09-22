@@ -16,6 +16,9 @@ source /apps/profiles/modules_asax.sh.dyn
 # Identify your exons by running:
 # hisat2_extract_exons.py Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf > exons.hisat
 
+# Now that we have our index built, let's run HISAT2 to map the reads from each sample to our genome. 
+# We'll loop through all of our samples like we did with the trimmomatic script. 
+
 # Now that we have our splice sites and exons, we can use that information to help build a splice site-informed index. This means that the program will take into account splice sites when it is mapping transcripts to the (unspliced) whole genome. 
 # Run the following code to build your index:
 # The -p flag specifies we want to run this code on 8 threads
@@ -32,4 +35,42 @@ source /apps/profiles/modules_asax.sh.dyn
 	    # -1 is the flag that we use to specify the fastq file containing our paired1 reads
 	    # -2 is the flag that we use to specify the fastq file containing our paired2 reads
 	    # After we've created our alignments, we're going to pipe the output of that command to the program samtools, which will convert our output from a .SAM format to a binary .BAM format. The file will encode the same information, but it takes up less space. 
-     
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C1B1filtered_1paired.fq -2 L1C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C2B1filtered_1paired.fq -2 L1C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C3B1filtered_1paired.fq -2 L1C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C4B1filtered_1paired.fq -2 L1C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C5B1filtered_1paired.fq -2 L1C5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C5.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U1B21filtered_1paired.fq -2 L2U1B22filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U2B1filtered_1paired.fq -2 L2U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U3B1filtered_1paired.fq -2 L2U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U4B1filtered_1paired.fq -2 L2U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U5B1filtered_1paired.fq -2 L2U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U5.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C1B21filtered_1paired.fq -2 L3C1B22filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C2B1filtered_1paired.fq -2 L3C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C3B1filtered_1paired.fq -2 L3C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C4B1filtered_1paired.fq -2 L3C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C5B1filtered_1paired.fq -2 L3C5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C5.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U1B1filtered_1paired.fq -2 L4U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U2B1filtered_1paired.fq -2 L4U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U3B1filtered_1paired.fq -2 L4U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U4B1filtered_1paired.fq -2 L4U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U5B1filtered_1paired.fq -2 L4U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U5.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C1B1filtered_1paired.fq -2 W1C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C2B1filtered_1paired.fq -2 W1C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C3B21filtered_1paired.fq -2 W1C3B22filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C4B1filtered_1paired.fq -2 W1C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U1B1filtered_1paired.fq -2 W2U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U2B1filtered_1paired.fq -2 W2U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U3B1filtered_1paired.fq -2 W2U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U4B1filtered_1paired.fq -2 W2U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U5B1filtered_1paired.fq -2 W2U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U5.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C1B1filtered_1paired.fq -2 W3C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C2B1filtered_1paired.fq -2 W3C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C3B1filtered_1paired.fq -2 W3C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C4B1filtered_1paired.fq -2 W3C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U1B1filtered_1paired.fq -2 W4U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U2B1filtered_1paired.fq -2 W4U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U3B1filtered_1paired.fq -2 W4U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U4B1filtered_1paired.fq -2 W4U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U4.bam
+
+exit
