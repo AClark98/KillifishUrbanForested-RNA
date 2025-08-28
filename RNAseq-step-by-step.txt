@@ -1,0 +1,477 @@
+1. Get sequences to ASC account.
+2. Make sure all sequences/samples are there.
+3. Copy (not move) the sequences into a new directory. (this is what you will manipulate; always leave raw data alone)
+	~these sequences should have a Md5.txt, fwd (_1), rev (_2)
+4. Call the md5sum command to check the sequences for integrity.
+	~md5sum _____ >> MD5_total.txt
+		~nano MD5.txt (put the code into excel)
+		~nano MD5_total.txt (put the code into excel)
+		!!!(^these should match or something is wrong)!!!
+		~Ctrl +X to exit nano
+5. Move fwd/rev seq to new directory (must create a new directory "mkdir").
+	~mv ______ or *.fq.gz (what's common for all files to move them all at once) to folder pathway
+	~ex: mv *.fq.gz ../../fastqc (because you had to go back 2 directories to get to where the fastqc directory is)
+6. Ensure that all files made it to the new location.
+7. Create a bash script to call the fastqc app.
+	~*this is on the HPC documentation
+	~nano ENTER - place bash script; Ctrl +X, Y to save, name(.sh), Ctrl +X
+	~chmod u+x name.sh (ENTER) - this activates the script in the directory
+	~run_script name.sh (ENTER) - this takes you to the queue system (never run in your folder or will get in trouble with supercomputer
+	~select parameters or press ENTER to accept defaults
+	~ "qstat" - shows the progress of the run
+	~ ".i" - in progress ; ".o" - report for finished run
+8. Transfer .html files from ASC shell to local secure computer: (do this in the local location)
+	~go to local computer shell and navigate to the folder you wish to place your files in and type "pwd" to get the complete path
+	~ex if I want to put the files in the folder FastQCoutputsGFKCH1: PS C:\Users\antre\Box\Bernal_lab\Antrelle\FastQCoutputsGFKCH1
+	~PS C:\Users\antre> scp -r aubadc002@asax.asc.edu:"/home/aubadc002/killifish/fastqc2/W3C3_B_1_fastqc.html" "\Users\antre\Box\Bernal_lab\Antrelle\FastQCoutputsGFKCH1" (quotes seem to help - the path turns blue)
+9. Open each .html file on windows explorer and place the "total sequences" and "total bases" for the raw sequences (pre-cleaning) into excel next to their name.
+10. Run trimmomatic
+11. Immediately run FastQC after (create a new FastQC script - be sure to change the last line to match the new file output "*.fq" 
+12. Transfer .html files from ASC shell to local secure computer:
+	~go to local computer shell and navigate to the folder you wish to place your files in and type "pwd" to get the complete path
+	~PS C:\Users\antre\Box\Bernal_lab\Antrelle\CleanedFastQCoutputsGFKCH1> scp -r aubadc002@asax.asc.edu:"/home/aubadc002/killifish/fastqc2/	*paired_fastqc.html" "\Users\antre\Box\Bernal_lab\Antrelle\CleanedFastQCoutputsGFKCH1" (THE FIRST PATH DID NOT TURN BLUE BUT IT WORKED 	SO PATHS MUST NOT HAVE TO BE BLUE)
+13. Make a new directory in the fastqc folder - mkdir paired
+14. cp not mv files to the paired folder to continue the analysis with the paired samples
+	cp -r /home/aubadc002/killifish/fastqc/L1/*1paired.fq /home/aubadc002/killifish/fastqc/paired
+	cp -r /home/aubadc002/killifish/fastqc2/*1paired.fq /home/aubadc002/killifish/fastqc/paired
+15. Download reference genome from NIH NCBI database - F. heteroclitus (with green check) (download .gtf, .gff, and .fa [fasta] file)
+16. Index the reference genome
+
+Option 1: 
+Transfer to the remote location: (do this in the remote location)
+	scp -r F_heteroclitus_genannotation.gtf aubadc002@asax.asc.edu:"/home/aubadc002/killifish/fastqc/paired"
+indexing the reference genome:
+go to NIH NCBI database and search for the species you want to use as a reference genome (https://www.ncbi.nlm.nih.gov/datasets/genome/?taxon=8078). Download the reference genome with the NCBI RefSeq annotation and document the RefSeq number (GCF_011125445.2). Download the .gtf and .fa [fasta] file.
+manually put in the terminal (not an nano sh file) - module load hisat2
+manually put in the terminal (not an nano sh file) - module load samtools/1.18
+now extract splice sites: hisat2_extract_splice_sites.py F_heteroclitus_genannotation.gtf > splicesites.hisat
+now extract exons: hisat2_extract_exons.py F_heteroclitus_genannotation.gtf > exons.hisat
+
+****OR****
+
+Option 2: 
+!!!!![There is also an option to download it from the internet to the ASC:
+mkdir refseq (inside of paired folder. This is the folder that will contain the downloaded sequences)
+make a bash script: 
+#!/bin/sh
+#
+# Load the module
+source /opt/asn/apps/anaconda_3-2022.10b
+module load wget/1.21/3
+save as "wget.sh"
+chmod u+x wget.sh
+-go to website (this will be either NIH NCBI or biomaRt/ensembl and copy the link and paste using the wget command in terminal); click on genome assembly name of ref genome you are going to use (should have green check and annotation NCBI RefSeq); click FTP (this will take you to the links for all of the data on the ref genome); copy link and paste it into the terminal using the wget command or add them all to the bash script, execute the file, and run the script
+ex:
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/011/125/445/GCF_011125445.2_MU-UCD_Fhet_4.1/GCF_011125445.2_MU-UCD_Fhet_4.1_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/011/125/445/GCF_011125445.2_MU-UCD_Fhet_4.1/GCF_011125445.2_MU-UCD_Fhet_4.1_genomic.gff.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/011/125/445/GCF_011125445.2_MU-UCD_Fhet_4.1/GCF_011125445.2_MU-UCD_Fhet_4.1_genomic.gtf.gz
+
+*the files will be red so you have to unzip them to remove the gz at the end and leave the gtf or fna/fa*
+*ex: 
+start - Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf.gz  (RED) Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.dna.toplevel.fa.gz
+command - gzip -d Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf.gz or gzip -d Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.dna.toplevel.fa.gz or gzip -d Fundulus*
+output - Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf.gz (WHITE) Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.dna.toplevel.fa
+
+
+copy the ind files in the refseq to the "paired" folder:
+cp GCF_011125445.2_MU-UCD_Fhet_4.1_genomic.fna.gz paired
+manually put in the terminal (not an nano sh file) - module load hisat2
+manually put in the terminal (not an nano sh file) - module load samtools/1.18
+now extract splice sites: hisat2_extract_splice_sites.py Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf > splice_sites.hisat
+now extract exons: hisat2_extract_exons.py Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2
+.112.gtf > exons.hisat
+
+index the reference genome using the following code:
+hisat2-build -p 8 --ss splice_sites.hisat --exon exons.hisat Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.dna.toplevel.fa Fhetero_genome
+
+run_script hisatbuild.sh
+
+bigmem
+8 cores
+default time
+500gb
+default name or change name (hisatbuildfheterogenome)
+default asax
+
+
+17. Map trimmed read to the reference genome
+
+*THE MANUALS AND BIOSTARS.ORG ARE VERY HELPFUL FOR TROUBLESHOOTING CODE*
+
+
+the command codes placed into the nano bin bash script: 
+
+the format for it: hisat2 -p 8 -k 3 -x Apoly_genome -1 ${sample}_mate1_paired.fq -2 ${sample}_mate2_paired.fq | samtools view -@ 8 -Sbh > ${sample}.bam
+
+L1C:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C1B1filtered_1paired.fq -2 L1C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C2B1filtered_1paired.fq -2 L1C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C3B1filtered_1paired.fq -2 L1C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C4B1filtered_1paired.fq -2 L1C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L1C5B1filtered_1paired.fq -2 L1C5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L1C5.bam
+
+L2U:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U1B21filtered_1paired.fq -2 L2U1B22filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U2B1filtered_1paired.fq -2 L2U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U3B1filtered_1paired.fq -2 L2U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U4B1filtered_1paired.fq -2 L2U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L2U5B1filtered_1paired.fq -2 L2U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L2U5.bam
+
+L3C:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C1B21filtered_1paired.fq -2 L3C1B22filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C2B1filtered_1paired.fq -2 L3C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C3B1filtered_1paired.fq -2 L3C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C4B1filtered_1paired.fq -2 L3C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L3C5B1filtered_1paired.fq -2 L3C5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L3C5.bam
+
+L4U:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U1B1filtered_1paired.fq -2 L4U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U2B1filtered_1paired.fq -2 L4U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U3B1filtered_1paired.fq -2 L4U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U4B1filtered_1paired.fq -2 L4U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 L4U5B1filtered_1paired.fq -2 L4U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > L4U5.bam
+
+W1C:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C1B1filtered_1paired.fq -2 W1C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C2B1filtered_1paired.fq -2 W1C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C3B21filtered_1paired.fq -2 W1C3B22filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W1C4B1filtered_1paired.fq -2 W1C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W1C4.bam
+
+W2U:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U1B1filtered_1paired.fq -2 W2U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U2B1filtered_1paired.fq -2 W2U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U3B1filtered_1paired.fq -2 W2U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U4B1filtered_1paired.fq -2 W2U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U4.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W2U5B1filtered_1paired.fq -2 W2U5B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W2U5.bam
+
+W3C:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C1B1filtered_1paired.fq -2 W3C1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C2B1filtered_1paired.fq -2 W3C2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C3B1filtered_1paired.fq -2 W3C3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W3C4B1filtered_1paired.fq -2 W3C4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W3C4.bam
+
+W4U:
+
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U1B1filtered_1paired.fq -2 W4U1B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U1.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U2B1filtered_1paired.fq -2 W4U2B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U2.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U3B1filtered_1paired.fq -2 W4U3B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U3.bam
+hisat2 -p 8 -k 3 -x Fhetero_genome -1 W4U4B1filtered_1paired.fq -2 W4U4B2filtered_2paired.fq | samtools view -@ 8 -Sbh > W4U4.bam
+
+
+18. Convert the bam file to a sorted bam file.
+
+#!/bin/sh
+#
+# Load the module
+source /apps/profiles/modules_asax.sh.dyn
+module load samtools/1.18
+samtools sort -@ 8 -o L1C1_sorted.bam L1C1.bam
+samtools sort -@ 8 -o L1C2_sorted.bam L1C2.bam
+samtools sort -@ 8 -o L1C3_sorted.bam L1C3.bam
+samtools sort -@ 8 -o L1C4_sorted.bam L1C4.bam
+samtools sort -@ 8 -o L1C5_sorted.bam L1C5.bam
+samtools sort -@ 8 -o L2U1_sorted.bam L2U1.bam
+samtools sort -@ 8 -o L2U2_sorted.bam L2U2.bam
+samtools sort -@ 8 -o L2U3_sorted.bam L2U3.bam
+samtools sort -@ 8 -o L2U4_sorted.bam L2U4.bam
+samtools sort -@ 8 -o L2U5_sorted.bam L2U5.bam
+samtools sort -@ 8 -o L3C1_sorted.bam L3C1.bam
+samtools sort -@ 8 -o L3C2_sorted.bam L3C2.bam
+samtools sort -@ 8 -o L3C3_sorted.bam L3C3.bam
+samtools sort -@ 8 -o L3C4_sorted.bam L3C4.bam
+samtools sort -@ 8 -o L3C5_sorted.bam L3C5.bam
+samtools sort -@ 8 -o L4U1_sorted.bam L4U1.bam
+samtools sort -@ 8 -o L4U2_sorted.bam L4U2.bam
+samtools sort -@ 8 -o L4U3_sorted.bam L4U3.bam
+samtools sort -@ 8 -o L4U4_sorted.bam L4U4.bam
+samtools sort -@ 8 -o L4U5_sorted.bam L4U5.bam
+samtools sort -@ 8 -o W1C1_sorted.bam W1C1.bam
+samtools sort -@ 8 -o W1C2_sorted.bam W1C2.bam
+samtools sort -@ 8 -o W1C3_sorted.bam W1C3.bam
+samtools sort -@ 8 -o W1C4_sorted.bam W1C4.bam
+samtools sort -@ 8 -o W2U1_sorted.bam W2U1.bam
+samtools sort -@ 8 -o W2U2_sorted.bam W2U2.bam
+samtools sort -@ 8 -o W2U3_sorted.bam W2U3.bam
+samtools sort -@ 8 -o W2U4_sorted.bam W2U4.bam
+samtools sort -@ 8 -o W2U5_sorted.bam W2U5.bam
+samtools sort -@ 8 -o W3C1_sorted.bam W3C1.bam
+samtools sort -@ 8 -o W3C2_sorted.bam W3C2.bam
+samtools sort -@ 8 -o W3C3_sorted.bam W3C3.bam
+samtools sort -@ 8 -o W3C4_sorted.bam W3C4.bam
+samtools sort -@ 8 -o W4U1_sorted.bam W4U1.bam
+samtools sort -@ 8 -o W4U2_sorted.bam W4U2.bam
+samtools sort -@ 8 -o W4U3_sorted.bam W4U3.bam
+samtools sort -@ 8 -o W4U4_sorted.bam W4U4.bam
+
+exit
+
+19. Index sorted bam file.
+
+#!/bin/sh
+#
+# Load the module
+source /apps/profiles/modules_asax.sh.dyn
+module load samtools/1.18
+samtools index L1C1_sorted.bam
+samtools index L1C2_sorted.bam
+samtools index L1C3_sorted.bam
+samtools index L1C4_sorted.bam
+samtools index L1C5_sorted.bam
+samtools index L2U1_sorted.bam
+samtools index L2U2_sorted.bam
+samtools index L2U3_sorted.bam
+samtools index L2U4_sorted.bam
+samtools index L2U5_sorted.bam
+samtools index L3C1_sorted.bam
+samtools index L3C2_sorted.bam
+samtools index L3C3_sorted.bam
+samtools index L3C4_sorted.bam
+samtools index L3C5_sorted.bam
+samtools index L4U1_sorted.bam
+samtools index L4U2_sorted.bam
+samtools index L4U3_sorted.bam
+samtools index L4U4_sorted.bam
+samtools index L4U5_sorted.bam
+samtools index W1C1_sorted.bam
+samtools index W1C2_sorted.bam
+samtools index W1C3_sorted.bam
+samtools index W1C4_sorted.bam
+samtools index W2U1_sorted.bam
+samtools index W2U2_sorted.bam
+samtools index W2U3_sorted.bam
+samtools index W2U4_sorted.bam
+samtools index W2U5_sorted.bam
+samtools index W3C1_sorted.bam
+samtools index W3C2_sorted.bam
+samtools index W3C3_sorted.bam
+samtools index W3C4_sorted.bam
+samtools index W4U1_sorted.bam
+samtools index W4U2_sorted.bam
+samtools index W4U3_sorted.bam
+samtools index W4U4_sorted.bam
+
+exit
+
+20. Generate read count data using the program StringTie.
+	-grab the .gff file
+	-cp -r Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3.gz /home/aubadc002/killifish/fastqc/paired
+	-gzip -d Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3.gz
+
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L1C1.gtf L1C1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L1C2.gtf L1C2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L1C3.gtf L1C3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L1C4.gtf L1C4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L1C5.gtf L1C5_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L2U1.gtf L2U1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L2U2.gtf L2U2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L2U3.gtf L2U3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L2U4.gtf L2U4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L2U5.gtf L2U5_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L3C1.gtf L3C1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L3C2.gtf L3C2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L3C3.gtf L3C3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L3C4.gtf L3C4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L3C5.gtf L3C5_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L4U1.gtf L4U1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L4U2.gtf L4U2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L4U3.gtf L4U3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L4U4.gtf L4U4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/L4U5.gtf L4U5_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W1C1.gtf W1C1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W1C2.gtf W1C2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W1C3.gtf W1C3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W1C4.gtf W1C4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W2U1.gtf W2U1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W2U2.gtf W2U2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W2U3.gtf W2U3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W2U4.gtf W2U4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W2U5.gtf W2U5_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W3C1.gtf W3C1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W3C2.gtf W3C2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W3C3.gtf W3C3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W3C4.gtf W3C4_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W4U1.gtf W4U1_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W4U2.gtf W4U2_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W4U3.gtf W4U3_sorted.bam
+stringtie -p 8 -e -B -G Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 -o /home/aubadc002/killifish/fastqc/paired/stringtie_results/W4U4.gtf W4U4_sorted.bam
+
+
+21. Format the read count data for DESeq2
+
+
+BUT BEFORE DOING SO:
+
+we need to identify the average read lengths for the prepDE.py script we must run to format the read count data for DESeq2:
+
+- run the following script:
+
+#!/bin/sh
+#
+# Load the module
+source /apps/profiles/modules_asax.sh.dyn
+module load samtools/1.18
+samtools stats L1C1.bam | grep "average length"
+samtools stats L1C2.bam | grep "average length"
+samtools stats L1C3.bam | grep "average length"
+samtools stats L1C4.bam | grep "average length"
+samtools stats L1C5.bam | grep "average length"
+samtools stats L2U1.bam | grep "average length"
+samtools stats L2U2.bam | grep "average length"
+samtools stats L2U3.bam | grep "average length"
+samtools stats L2U4.bam | grep "average length"
+samtools stats L2U5.bam | grep "average length"
+samtools stats L3C1.bam | grep "average length"
+samtools stats L3C2.bam | grep "average length"
+samtools stats L3C3.bam | grep "average length"
+samtools stats L3C4.bam | grep "average length"
+samtools stats L3C5.bam | grep "average length"
+samtools stats L4U1.bam | grep "average length"
+samtools stats L4U2.bam | grep "average length"
+samtools stats L4U3.bam | grep "average length"
+samtools stats L4U4.bam | grep "average length"
+samtools stats L4U5.bam | grep "average length"
+samtools stats W1C1.bam | grep "average length"
+samtools stats W1C2.bam | grep "average length"
+samtools stats W1C3.bam | grep "average length"
+samtools stats W1C4.bam | grep "average length"
+samtools stats W2U1.bam | grep "average length"
+samtools stats W2U2.bam | grep "average length"
+samtools stats W2U3.bam | grep "average length"
+samtools stats W2U4.bam | grep "average length"
+samtools stats W2U5.bam | grep "average length"
+samtools stats W3C1.bam | grep "average length"
+samtools stats W3C2.bam | grep "average length"
+samtools stats W3C3.bam | grep "average length"
+samtools stats W3C4.bam | grep "average length"
+samtools stats W4U1.bam | grep "average length"
+samtools stats W4U2.bam | grep "average length"
+samtools stats W4U3.bam | grep "average length"
+samtools stats W4U4.bam | grep "average length"
+
+exit
+
+
+- place the average lengths in the excel sheet
+- calculate the average using excel
+
+# Start by moving into your stringtie_results folder
+cd ~/stringtie_results
+# create the prepDE.py (I used prepDE.py3) script by going to https://ccb.jhu.edu/software/stringtie/index.shtml?t=manual/ and downloading the prepDE.py3 script from "using StringTie with DESeq2 and edgeR"; the script is provided for you, just copy and paste into nano"
+# activate the script
+# Run the prepDE.py3 script from the command line
+# The -l flag allows us to specify that the average read length in our alignment was 127 bp
+# The -i flag tells the script where to look for the input files. Our stringtie outputs for each sample were written to a sample-specific folder in ~/stringtie_results. 
+# The -g and -t flags allow us to specify where we want the gene and transcript result files to be output to, respectively.
+# run from command line; not in a script 
+python prepDE.py -l 127 -i ~/stringtie_results/ -g ~/gene_count_matrix.csv -t ~/transcript_count_matrix.csv
+
+
+
+
+
+Error: sub-directory '/home/aubadc002/home/aubadc002/killifish/fastqc/paired/stringtie_results/' not found!
+
+
+python prepDE.py3 -l 127 -i ~/killifish/fastqc/paired/stringtie_results/
+-g ~/gene_count_matrix.csv -t ~/transcript_count_matrix.csv
+
+
+Error: no GTF files found under base directory /home/aubadc002/killifish/fastqc/paired/stringtie_results/ !
+
+
+https://github.com/gpertea/stringtie/issues/88
+The gtf files are expected in the 2nd level sub-directories (sample1dir, sample2dir etc.) which correspond to your 160315_YOSHI_... directory I guess. Indeed, the script does not care if you have any gtf files directly under the 1st level sub-directory (ballgown in this example).
+So it should be as easy as creating a ballgown sub-directory and then moving that 160315_YOSHI_.. directory (and others like it, I guess you're using multiple samples) under that, and then run prepDE.py in the same directory which parents ballgown (of course you can call that 1st level sub-directory something else and pass it to the -i option, ballgown is just the default).
+
+
+mkdir for each sample: mkdir L1C1, etc.
+mv L1C1.gtf to L1C1, etc.
+python prepDE.py3 -l 127 -i ~/killifish/fastqc/paired/stringtie_results/ -g ~/gene_count_matrix.csv -t ~/transcript_count_matrix.csv
+
+*the outputs are going to be in your home directory; can move them to local computer and move them into the right directory
+
+
+scp -r aubadc002@asax.asc.edu:"/home/aubadc002/gene_count_matrix.csv" "C:\Users\antre\Box\Bernal_lab\Antrelle\Killifish Output"
+
+scp -r aubadc002@asax.asc.edu:"/home/aubadc002/transcript_count_matrix.csv" "C:\Users\antre\Box\Bernal_lab\Antrelle\Killifish Output"
+
+
+
+
+######### The data is now in the Box folder and will be worked on using R-studio ##########
+
+22. Run the DESeq Analysis and Pairwise Comparisons for Gulf Killifish (see DESeq2_GulfKillifish.R for reference and steps)
+
+
+23. Modify the Pairwise Comparison Tables only to include certain information to be used for the GO term tests. (see PWCtablemodify.R)
+
+After modifying the tables to only include the Ensembl_LOGFC_AllGENES, the number columns are still there:
+
+Ctrl + H
+Find what: ^\d+\s*,?
+Replace with:
+Enable Regular Expression
+Replace all
+
+
+#############################################
+
+Deleting rows that contain "NA" or rows that are blank (keep rows that have log2FoldChange as 0):
+
+Find what: ^.*NA and leave "Replace with" blank *this only deletes the contents of the row, but not the row itself*
+Delete the entire row: Find what: ^\r?\n and "Replace with" blank
+
+#############################################
+
+How to remove the CR LF
+Edit
+EOL Conversion
+UNIV/OSX Format
+*this will effectively change the line endings from just CR to LF (Line Feed), which is the standard Unix format.
+
+save [not save as]
+
+############################################ (run GMO)
+
+
+
+24. Download the GO_MWU pipeline from GitHub: https://github.com/z0on/GO_MWU and download every file in it to your working directory. Then run the sample files to familiarize yourself with it. Then, run your analysis. You have to run three tests (MF, BP, and CC) for each pairwise. (see sample_GO_MWU)
+
+
+25. Download strawberry perl and place it in your path.
+********See Perl_troubleshoot.txt to properly install perl for Windows********
+
+26. Run GO_MWU analysis (see GO_MWU_GFKanalysis.R)
+
+27. Import the GO terms number in a excel spreadsheet. Also, add every output (starting with "MWU_typeoftest_samplename" to the excel by going to data + add from csv/text. The data is going to be automatically outputted into a document (and to your working directory) when you run each GO category test.
+
+28. Once the sheets are inputted into one excel sheet (19 tabs total for me because of first tab being the GO term number outputs for each PWC and GO term test ran), you are to rearrange each MWU sheet to get the 20 most up-regulated activity and 20 most down-regulated activity:
+
+
+Ctrl + A
+Data
+Sort
+Sort by: padj (not pvalue because you have to use the standardized one; it provides the strength)
+Sort on: cell values
+Order: smallest to largest
+Add level
+Sort by: delta.rank
+Sort on: cell values
+Order: smallest to largest
+
+
+
+
+
+
+
+
+
+
