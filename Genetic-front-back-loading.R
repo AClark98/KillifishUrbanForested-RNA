@@ -406,6 +406,9 @@ pheatmap(expr_LB_in_WBf,
 #heatmap saved as "Frontloading_LB_in_WBhome.pdf" and "Frontloading_LB_in_WBhome.png"
 
 
+######NOTE: It is normal to get genes in the front-back loading analysis that DOES NOT show up in the pairwise comparison.
+
+
 #########End of front-back loading analysis#########
 
 
