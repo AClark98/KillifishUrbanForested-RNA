@@ -1,1 +1,1112 @@
+########## RNA-seq data calling SNPs ###########
+######### Antrelle D. Clark - Chapter 1 ##########
 
+  
+#########################################################################################  
+  
+ 
+ #######Initial filtering
+ 
+  
+# keeping -C 50 command as it removes mismatches but setting minimum quality to 30 (-q 30) #
+  
+  
+  
+# going to run the code keeping the C, but removing the Q 30 and making the -q 30 to only keep high confident SNPS: 
+  # script for bcftools - calling SNPS (saved as SNPcalling-min30.sh)
+	#!/bin/bash
+	#
+	# load the Bcftools environment
+	#source /apps/profiles/modules_asax.sh.dyn
+	#module load bcftools/1.13
+	# place bcftools commands here
+	#bcftools mpileup -b samples-bam-format.txt -C 50 -f '/home/aubadc002/killifish/killifish-rnaseq-SNP/fundulus.fa' -o GFK-bcf-may0425-30.vcf -q 30 -Ov --threads 3 -I
+  OUTPUT FILE: GFK-bcf-may0425-30.vcf
+  run_script name: GFK-bcf-may0425-30 | OUTPUT FILE: GFK-bcf-may0425-30.o275348
+  		#[mpileup] 37 samples in 37 input files
+		#[mpileup] maximum number of reads per input file set to -d 250
+  
+  
+# then run code to see how many SNPs you have:
+
+# script to call SNPs (saved as SNPs-may0425-min30.sh)
+	#!/bin/bash
+	#
+	# load the Bcftools environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	# place bcftools commands here
+	bcftools view -H GFK-bcf-may0425-30.vcf | wc -l
+  OUTPUT FILE: SNPs-may0425-min30.o275753
+  run_script name: SNPs-may0425-min30 
+  NUMBER OF SNPS: 674,002,378
+  
+  
+# script for bcftools call filtering (saved as bcftools-call-filter-30.sh)
+	#!/bin/bash
+	#
+	# load the Bcftools environment
+	#source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	module load samtools/1.18
+	# place bcftools commands here
+	bcftools call -m -Ov -o GFKmay0425-bcfcallsnpfilter-30.vcf --threads 6 -V indels -v GFK-bcf-may0425-30.vcf 
+	#exit
+  OUTPUT FILE: GFKmay0425-bcfcallsnpfilter-30.vcf
+  run_script name: bcftools-call-filter-30 | bcftools-call-filter-30.o274552
+  		#Note: none of --samples-file, --ploidy or --ploidy-file given, assuming all sites are diploid 
+  
+  
+# script to count SNPs from output file (saved as GFK-bcftoolscall-min30-SNPcount.sh)
+	#!/bin/bash
+	#
+	# load the Bcftools environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	# place bcftools commands here
+	bcftools view -H GFKmay0425-bcfcallsnpfilter-30.vcf | wc -l
+  run_script name: GFK-bcf-call-SNPS-min30 | OUTPUT FILE: GFK-bcf-call-SNPS-min30.o275970
+  NUMBER OF SNPS AFTER FIRST FILTERING: 3115110
+  
+    
+#script to input initial filtering into vcfutils filtering (saved as vcfutils-filter.sh)
+	#!/bin/bash
+	#
+	# load the Bcftools environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	# place vcftools commands here
+	vcfutils.pl varFilter -d 20 GFKmay0425-bcfcallsnpfilter-30.vcf > gfk-snps-filtered-08-may.vcf
+  OUTPUT FILE: gfk-snps-filtered-08-may.vcf
+  	run_script name - vcfutilsfilter
+  	
+ 
+ #script to count SNPs from out vcfutils filter file (saved as vcfutils-SNPs.sh)
+  	#!/bin/bash
+	#
+	# load the Bcftools environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	# place bcftools commands here
+	bcftools view -H gfk-snps-filtered-08-may.vcf | wc -l
+  NUMBER OF SNPS AFTER VCFUTILS FILTERING: 1281352
+	run_script name - vcfutils-SNPs | OUTPUT FILE: vcfutils-SNPs.o275972
+
+  
+#script to further filter with VCFtools to include population presence (75%) (saved as pop-presence-75.sh)
+  	#!/bin/bash
+	#
+	# load the Vcftools environment using the Anaconda environment
+	source /apps/x86-64/apps/anaconda_3-2022.10
+	module load vcftools/0.1.16
+	# place vcftools commands here
+    vcftools --vcf gfk-snps-filtered-08-may.vcf --recode --out gfk-snps-filter75 --max-missing 0.75 
+  OUTPUT FILE: gfk-snps-filter75
+  run_script name - pop-presence-75 | pop-presence-75.o276122
+  		#in 75% of population, kept 836,226 out of possible 1281352
+  		#for 50% of population: 1,051,226
+  		#for 90% of population: 642,173 			#90% pop presence is what I went with for downstream analyses
+  		#for 100% of population: 187
+  
+  #the code for pop presence of 90% (saved as pop-presence-90.sh)				
+  	#!/bin/bash
+	#
+	# load the vcftools environment using the anaconda environment
+	source /apps/x86-64/apps/anaconda_3-2022.10
+	module load vcftools/0.1.16
+	# place vcftools commands here
+	vcftools --vcf gfk-snps-filtered-08-may.vcf --recode --out gfk-snps-filter90 --max-missing 0.90 
+  OUTPUT FILE: gfk-snps-filter90.recode.vcf
+  run_script name - pop-presence-90 | pop-presence-90.o276130
+ 
+ 
+#######Pruning for high-confidence SNPs
+
+#With the ID's present, estimate the R2 with Plink on Easley HPC. 
+#The only filter here is the Kb window of 1000 KB (1 million bases) for the graph. Test 1 and 2 with 50 and 1000 showed a very confusing graph. Now test with all parameters together (r2, ld-window, ld-window-kb...). Script is "plink-ld.sh"
+
+#!/bin/bash
+#
+module load plink/1.9
+plink --vcf /home/mab0205/killifish/snps/gfk-filter90.vcf --allow-extra-chr --r2 gz --ld-window 100 --ld-window-r2 0 --ld-window-kb 5000 --out plinkLD-test2
+# used --allow-extra-chr because it tells PLINK2 to accept chromosomes that aren’t labeled 
+# as typical numeric or sex chromosomes (e.g., scaffold names from a draft genome); common for non-model organisms
+
+
+Then, the LD-decay python script (from speciation genomics) was used.  For this you have to make a separate batch script, calling python. The name of the script is "ld-decay.sh". It has to be run in a bigger partition of the HPC: 
+
+sbatch -N3 –partition bigmem2 -t 2:00:00 ld-decay.sh
+
+After the previous script runs, then use the python script to make a figure. This requires Tidyverse, so R has to be loaded as a module. Run bash script 'ld-decay.sh' 
+#!/bin/bash
+#
+#  load the module
+module load  R/4.3.0
+python ld-decay.py -i plinkLD-test2.ld.gz -o plinkLD-plots
+
+This will generate the plot files (decay and decay_bins) that can then be graphed in R with ggplot, using the script: 
+
+library(tidyverse)
+my_bins<- './plinkLD-plots.ld_decay_bins'
+ld_bins<-read_tsv (my_bins)
+ggplot(ld_bins, aes(distance, avg_R2)) + geom_line() +
+  xlab("Distance (bp)") + ylab(expression(italic(r)^2))
+
+plinkLD-test-5M.ld.gz
+
+## PRUNING happens here!!!
+
+###grab the original file and give the ID column a value using vcfR IN R. This is a ##separate library that has to be installed in R. Here the individual ID was the combination of Chromosome and Position
+x<-read.vcfR('gfk-snps-filter90-edited')
+head (x)
+y<-addID(x, sep = "_")
+head(y)
+write.vcf(y, "gfk-snps-filter90-with-ID")
+
+##After this, I setup the variant pruning to only take SNPS separated over 1 Million BP, with an R2<0.2 The resulting VCF file has 74,759 SNPs of high confidence (Log File reads "567414 of 642173 variants removed"). This script is the "plink-prune-r2.sh". 
+
+#!/bin/bash
+#
+module load plink/1.9
+plink --vcf /home/mab0205/killifish/snps/gfk-snps-filter90-with-ID.vcf --allow-extra-chr --indep-pairwise 1000000 1 0.2 --recode vcf --out pruneR2-test
+
+The file has to be "pruned", using the list of removed snps from the *.out file. Using the following script. 
+
+plink --vcf /home/mab0205/killifish/snps/gfk-snps-filter90-with-ID.vcf --allow-extra-chr --exclude pruneR2-test.prune.out --recode vcf --out killifish-pruned-final-74k
+
+##after that use Adegenet and Pegas to evaluate differences 
+
+
+#######Calculating Fixation Indices (FIS/Fst)
+
+
+#Transfer pruned SNP file from local computer to ASC
+
+scp -r /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/antrelle-snps/killifish-pruned-final-74k.vcf aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP-pruned
+
+
+##calculate FIS (a measure of inbreeding within a population) using PLINK 
+
+#!/bin/bash
+	#
+	#load the PLINK environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load plink/1.9_beta
+	#convert vcf to plink format
+	plink --vcf killifish-pruned-final-74k.vcf --make-bed --out gfk-plink --allow-extra-chr
+	#place the PLINK commands here
+  plink --bfile gfk-plink --keep LB_pop_forFIS.txt --het --out LB_FIS --allow-extra-chr #pop file needs to be two columns containing sample ID for population you want to keep
+  
+  #OUTPUT FILES created from vcf to plink conversion:
+  		#gfk-plink.bed
+  		#gfk-plink.bim
+  		#gfk-plink.fam #this shows you have the sample IDs are format to create the pop file needed
+  		#gfk-plink.nosex #this would show the sex assigned to each sample; no sex documented for ours which is normal and usually indicated by -9
+  		#gfk-plink.log
+  		
+  #OUTFUT FILES created from plink command:
+  		#LB-FIS.o327565 #shows you that the command actually ran without issues
+  		#LB_FIS.het #individual results will be shown here
+  			#average FIS (place directly to command line):
+  					awk 'NR > 1 {sum += $6} END {print "Mean F_IS for LB:", sum / (NR - 1)}' LB_FIS.het
+							#Mean F_IS for LB: 0.0186623			#higher homozygosity/inbreeding than WB
+  		#LB_FIS.log
+  		#LB_FIS.nosex
+  
+
+##calculated for Weakley Bayou population (saved as WB_FIS.sh)
+  
+    #!/bin/bash
+	#
+	#load the PLINK environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load plink/1.9_beta
+	#convert vcf to plink format
+	#plink --vcf killifish-pruned-final-74k.vcf --make-bed --out gfk-plink --allow-extra-chr #####this was completed during LB pop
+	#place the PLINK commands here
+  plink --bfile gfk-plink --keep WB_pop_forFIS.txt --het --out WB_FIS --allow-extra-chr
+  
+  
+  #OUTFUT FILES created from plink command:
+  	#WB-FIS.o327573
+  	#WB_FIS.het
+  		#average FIS (place directly to command line):
+  				awk 'NR > 1 {sum += $6} END {print "Mean F_IS for WB:", sum / (NR - 1)}' WB_FIS.het
+  						#Mean F_IS for WB: 0.00376612 			#lower homozygosity/inbreeding than LB; more genetic variability and outbreeding than LB
+  	#WB_FIS.log
+  	#WB_FIS.nosex
+
+
+############For FST (measure of heterozygosity) and nucleotide diversity: you must use your filtered file before
+			you did the pruning step because FST and nucleotide diversity can only be calculated with the file
+			that still has the genotypes within the file. The pruning file sometimes does not, which mine does not so
+			using unpruned filtered file for these calculations.
+			My file: gfk-snps-filter90.recode.vcf
+	
+
+##calculate nucleotide diversity by site
+
+	#nucleotide diversity for Long Bayou (saved as ND_LB.sh)
+  	
+  	#!/bin/bash
+	#
+	#load the vcftools package using the anaconda environment
+	source /apps/x86-64/apps/anaconda_3-2022.10
+	module load vcftools/0.1.16
+	# place vcftools commands here
+	vcftools --gzvcf gfk-snps-filter90.recode.vcf --keep LB_pop_forND.txt --site-pi --out LB_pi
+	
+
+		#.vcf file is apparently gzipped so have to rename it to have the .vcf.gz version
+  		#mv gfk-snps-filter90.recode.vcf gfk-snps-filter90.recode.vcf.gz
+
+	OUTPUT FILE: LB_pi.sites.pi
+				 ND-LB.o327596		##After filtering, kept 20 out of 37 Individuals (this is correct. 20 samples are for LB pop!)
+			#average nucleotide diversity across all sites within LB population:
+		    awk '{ sum += $3; count++ } END { if(count>0) print sum/count; else print "No data" }' LB_pi.sites.pi
+			#0.102832
+
+	
+	#nucleotide diversity for Weakley Bayou (saved as ND_WB.sh)
+  	
+  	#!/bin/bash
+	#
+	#load the vcftools package using the anaconda environment
+	source /apps/x86-64/apps/anaconda_3-2022.10
+	module load vcftools/0.1.16
+	# place vcftools commands here
+	vcftools --gzvcf gfk-snps-filter90.recode.vcf.gz --keep WB_pop_forND.txt --site-pi --out WB_pi
+  
+  	OUTPUT FILE: WB_pi.sites.pi
+  				 ND-WB.o327598 		##After filtering, kept 17 out of 37 Individuals (this is correct. 17 samples are for WB pop!)
+  			#average nucleotide diversity across all sites within WB population:
+			awk '{ sum += $3; count++ } END { if(count>0) print sum/count; else print "No data" }' WB_pi.sites.pi
+			#0.105788 			#more genetic variability than LB  
+    
+
+##calculate Fst (measure of heterozygosity) - Pairwise Fst
+
+
+
+	#Fst between populations (saved as Fst-LBvsWB.sh)
+  	
+  	#!/bin/bash
+	#
+	# load the vcftools environment using the anaconda environment
+	source /apps/x86-64/apps/anaconda_3-2022.10
+	module load vcftools/0.1.16
+	# place vcftools commands here
+    vcftools --vcf gfk-snps-filter90.recode.vcf --weir-fst-pop LB_pop.txt --weir-fst-pop WB_pop.txt --out LBvsWB_Fst #pop list should only include sample name (i.e., L1C1 not L1C1.bam)
+  
+  OUTPUT FILE: LBvsWB_Fst
+  run_script name - LBvsWB_Fst | LBvsWB_Fst.o
+    
+  #Weir and Cockerham mean Fst estimate: 0.011609 #average across sites
+  #Weir and Cockerham weighted Fst estimate: 0.02074 #adjusted for sample size and allele frequency
+  
+
+ 
+ 
+############Use pruned SNP file for Admixture/PCA/clustering
+ 
+#######Admixture
+
+#create Admixture to determine ancestral lineages for samples
+  
+  
+### The ASC did not accept the format of the pruned file to run the admixture so going through these steps to reformat the pruned file
+
+##convert pruned vcf file to make sure it has biallelic SNPs only
+
+
+										(saved as pruned-vcf-to-biallelic.sh)
+	#!/bin/bash
+	#
+	# load the vcftools environment using the anaconda environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load bcftools/1.13
+	# place bcftools commands here
+	bcftools view -m2 -M2 -v snps killifish-pruned-final-74k.vcf > pruned.biallelic.vcf
+
+  	OUTPUT FILE: pruned.biallelic.vcf
+  
+  
+  
+  # compress the file and index it (run directly from the command line)
+ 	
+ 	
+ 	#have to load abyss to load htslib directly into terminal then see which bgzip and tabix is available before writing bash script
+ 	#module load abyss/2.3.1							#should accept with no problem
+   	#module load htslib/1.12-axnpgjv					#should accept with no problem
+ 	#which bgzip
+	#which tabix
+	#/apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/htslib-1.12-axnpgjvbazi3pk3sinyutirgqu6fd5zn/bin/bgzip		#just bgzip
+	#/apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/htslib-1.12-axnpgjvbazi3pk3sinyutirgqu6fd5zn/bin/tabix		#just tabix
+
+	#now conversion should work
+ 	
+ 										(saved as bgzip.sh)
+ 	#!/bin/bash
+	#
+	# load the htslib package using the anaconda environment #this package allows you to convert using bgzip which is necessary for VCF files?
+ 	source /apps/x86-64/apps/anaconda_3-2022.10
+ 	module load abyss/2.3.1
+    module load htslib/1.12-axnpgjv
+ 	bgzip -c pruned.biallelic.vcf > pruned.biallelic.vcf.gz
+	tabix -p vcf pruned.biallelic.vcf.gz
+
+OUTPUT FILE: pruned.biallelic.vcf.gz
+ 
+ 
+  
+  #convert reformatted vcf.gz file back into plink format (saved as reformat-vcf-to-plink.sh)
+  
+    #!/bin/bash
+	#
+	#load the PLINK environment
+	source /apps/profiles/modules_asax.sh.dyn
+	module load plink/1.9_beta
+	#convert reformatted vcf to plink format
+	plink --vcf pruned.biallelic.vcf.gz --make-bed --out pruned_biallelic_reformat --allow-extra-chr
+  
+  
+  
+  OUTPUT FILES:
+  pruned_biallelic_reformat.bed
+  pruned_biallelic_reformat.bim
+  pruned_biallelic_reformat.fam
+  pruned_biallelic_reformat.log
+  pruned_biallelic_reformat.nosex
+  
+  
+  
+  
+  ##I have ran previous code that did not work because I have a non-model organism which means
+  ##there are chromosomes that are not labeled as integers
+  ##angsd would not accept my chromosome names and admixture cross validation would not spit out the CV errors
+  ##so had to rename my chromosomes using the following code:
+  
+  awk '{if(!seen[$1]++){map[$1]=++count} $1=map[$1]; print $0}' pruned_biallelic_reformat.bim > pruned_biallelic_reformat_fixed.bim
+
+  ##NOTE: this was run directly on the command line; also, .bed and .fam should stay the same (no need to re-run)
+  ##	  but change the base name to match (to be safe I am doing cp instead of mv)
+  
+  cp -r pruned_biallelic_reformat.bed pruned_biallelic_reformat_fixed.bed
+  cp -r pruned_biallelic_reformat.fam pruned_biallelic_reformat_fixed.fam
+  
+  
+ ##run admixture for cross-validation (saved as crossV-Kvalues.sh)
+
+  					######BEFORE RUNNING THIS LOOP, LOOK AT THE NEXT LOOP AND MY NOTE UNDERNEATH IT#######  					
+
+#!/bin/bash
+source /apps/profiles/modules_asax.sh.dyn
+module load plink/1.9_beta
+export PATH=/apps/x86-64/apps/anaconda_3-2020.02/bin:$PATH
+module load admixture/1.3.0
+
+PLINK_BASE="pruned_biallelic_reformat_fixed"
+
+# Loop over K values 1-10
+for K in {1..10}; do
+    echo "Running ADMIXTURE for K=$K..."
+    for REP in {1..5}; do
+        SEED=$(( RANDOM ))  # random seed per replicate; important to check how stable that K value is; if the reps produce CV error that are widespread then that K value is unstable
+        echo "Replicate $REP for K=$K (seed $SEED)"
+        admixture --cv $PLINK_BASE.bed $K -s $SEED 2>&1 | tee log_K${K}_rep${REP}.out &
+    done
+    wait  # wait for all reps of this K to finish before moving to next K
+done
+
+  ####^this should produce .Q and .P files for each K files for each K and an .out file for each K-rep (but this did not; SEE BELOW)
+  
+  
+  					
+
+  	#####NOTE:the loop I ran did not which resulted in one .P and .Q file per K
+  	#####with it holding the information for rep 5 in it. However, it was
+  	#####okay for me to proceed without running again since my loglikelihoods are
+  	#####nearly identical that it doesn't matter which rep used downstream so in this
+  	#####case, rep 5 is used downstream for my admixture graphs.
+  
+  
+  
+  OUTPUT FILE: crossVKvalues.o6760 (this contains the CV errors; the best K has the lowest CV error rate)
+  
+  ##Admixture for K=1
+  CV error - rep1: 0.53879
+  			 rep2: 0.53779
+  			 rep3: 0.53771
+  			 rep4: 0.53781
+  			 rep5: 0.53886
+  			 		 
+  
+  ##Admixture for K=2
+  CV error - rep1: 0.58869
+  			 rep2: 0.58603
+  			 rep3: 0.58544
+  			 rep4: 0.58474
+  			 rep5: 0.58573
+  			 		 
+  			 
+  ##Admixture for K=3
+  CV error - rep1: 0.69639
+  			 rep2: 0.68963
+  			 rep3: 0.69027
+  			 rep4: 0.69669
+  			 rep5: 0.69661
+  			 	 
+  			 
+  ##Admixture for K=4
+  CV error - rep1: 0.81341
+  			 rep2: 0.80084
+  			 rep3: 0.79874
+  			 rep4: 0.79416
+  			 rep5: 0.79604
+  			 	 	 
+  			 
+  ##Admixture for K=5
+  CV error - rep1: 0.92484
+  			 rep2: 0.93460
+  			 rep3: 0.94226
+  			 rep4: 0.90575
+  			 rep5: 0.90097
+
+  
+  ##Admixture for K=6
+  CV error - rep1: 1.07856
+  			 rep2: 1.05395
+  			 rep3: 1.09693
+  			 rep4: 1.08116
+  			 rep5: 1.08607
+  
+  
+  ##Admixture for K=7
+  CV error - rep1: 1.19309
+  			 rep2: 1.28292
+  			 rep3: 1.18189
+  			 rep4: 1.26126
+  			 rep5: 1.20229
+  
+  
+  ##Admixture for K=8
+  CV error - rep1: 1.39758
+  			 rep2: 1.37168
+  			 rep3: 1.34666
+  			 rep4: 1.34041
+  			 rep5: 1.33422
+  
+  
+  ##Admixture for K=9
+  CV error - rep1: 1.46460
+  			 rep2: 1.53675
+  			 rep3: 1.50203
+  			 rep4: 1.58637
+  			 rep5: 1.50882
+  
+  
+  ##Admixture for K=10
+  CV error - rep1: 1.59745
+  			 rep2: 1.67565
+  			 rep3: 1.73816
+  			 rep4: 1.66111
+  			 rep5: 1.62487
+  
+  
+  
+ ###Use R-studio to plot CV errors  
+
+library(ggplot2)
+
+# Enter your CV error data (grab your CV errors from your output file; can extract using code or manually by going through the output file)
+cv_errors <- list(
+  K1  = c(0.53879, 0.53779, 0.53771, 0.53781, 0.53886),
+  K2  = c(0.58869, 0.58603, 0.58544, 0.58474, 0.58573),
+  K3  = c(0.69639, 0.68963, 0.69027, 0.69669, 0.69661),
+  K4  = c(0.81341, 0.80084, 0.79874, 0.79416, 0.79604),
+  K5  = c(0.92484, 0.93460, 0.94226, 0.90575, 0.90097),
+  K6  = c(1.07856, 1.05395, 1.09693, 1.08116, 1.08607),
+  K7  = c(1.19309, 1.28292, 1.18189, 1.26126, 1.20229),
+  K8  = c(1.39758, 1.37168, 1.34666, 1.34041, 1.33422),
+  K9  = c(1.46460, 1.53675, 1.50203, 1.58637, 1.50882),
+  K10 = c(1.59745, 1.67565, 1.73816, 1.66111, 1.62487)
+)
+
+# Convert to data frame with mean and SD
+df <- data.frame(
+  K = 1:10,
+  Mean = sapply(cv_errors, mean),
+  SD = sapply(cv_errors, sd)						#SD shows you the variation of your reps (I did 5 reps per K; if the variation is big then you will see error bars around that particular K on the line graph)
+)
+
+# Plot the cross-validation errors
+library(ggplot2)
+ggplot(df, aes(x = K, y = Mean)) +
+  geom_line(color = "blue") +
+  geom_point(size = 3, color = "blue") +
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, color = "black") +
+  theme_minimal() +
+  labs(
+    title = "ADMIXTURE Cross-Validation Error",
+    x = "K (Number of Clusters)",
+    y = "Mean CV Error ± SD"
+  )
+
+#look for the "elbow" effect; this is where there is a noticeable (even if it's small) bend in the line.
+#Mine shows that the slope/line levels out after K=2 so K=2 is optimal for admixture graph.
+#However, CV error is smallest at K=1 but the CV error difference between K=1 and K=2 is ~0.05 so either works
+#But by looking directly at the cross-validation error line graph, K=2 is selected for admixture graph downstream.
+
+  
+#Once you have selected your K value, you must decide which rep to use by looking for the highest loglikelihood value (least negative)
+		#selected K=2
+		#loglikelihood value for each rep:
+				#K=2 rep 1: -2100145.399941
+				#K=2 rep 2: -2100149.765643
+				#K=2 rep 3: -2100149.765644
+				#K=2 rep 4: -2100149.765643
+				#K=2 rep 5: -2100149.765644
+
+  		#selected K=2 rep 1 because of it being the least negative loglikelihood value
+  		#RULE OF THUMB: in a situation like this where the loglikelihood value is smallest for rep 1,
+  		#but the CV error is smallest for rep 4, always go with the smallest loglikelihood first. If
+  		#all reps have the same loglikelihood then you look for which has the smallest CV error and
+  		#move forward with that rep for admixture graph plotting  
+  
+  
+  #transfer .Q and .P files corresponding to K=2 rep 1 to local computer for R-studio
+  
+  
+  scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP-pruned/pruned_biallelic_reformat_fixed.2.P /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+  scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP-pruned/pruned_biallelic_reformat_fixed.2.Q /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+  
+  
+  
+  
+  #creating admixture graph for K=1 as well (just for safety measure)
+  	#K=1
+		#loglikelihood value for each rep:
+				#K=1 rep 1: -2162703.420944
+				#K=1 rep 2: -2162703.420944
+				#K=1 rep 3: -2162703.420944
+				#K=1 rep 4: -2162703.420944
+				#K=1 rep 5: -2162703.420944
+  
+  		#loglikelihood value is the same across all reps, so in this case: we will go with
+  		#the rep that has the lowest CV error
+  				#selected K=1 rep 3: 0.53771
+  						#you will transfer the .Q and .P corresponding to K=1 rep 3 to local computer for R-studio admixture graph plotting
+  		#NOTE:in the event that the CV error across all 5 reps are the same and the loglikelihood value
+  		#across all 5 reps are the same, then you can just plot with the first rep.
+  
+  
+  scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP-pruned/pruned_biallelic_reformat_fixed.1.P /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+  scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP-pruned/pruned_biallelic_reformat_fixed.1.Q /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+
+  
+  
+  #####R-studio to create admixture graphs
+  
+  ##Admixture graph for K=2
+  
+library(dplyr)
+library(ggplot2)
+install.packages("readr")
+library(readr)
+
+setwd("~/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1")
+
+
+# Load files for K=2
+samples <- read.csv("sample-pop-list.csv", header = FALSE)
+admixK2 <- read.table("pruned_biallelic_reformat_fixed.2.Q", header = FALSE)
+
+# Combine metadata and admixture
+admixK2_df <- cbind(samples, admixK2)
+
+# Rename columns
+colnames(admixK2_df)[-(1:2)] <- paste0("Cluster", 1:(ncol(admixK2_df)-2))
+
+# Plot
+library(reshape2)
+library(ggplot2)
+
+colnames(admixK2_df)[1:2] <- c("SampleID", "Population")
+
+
+# Create ordering BEFORE melting (unique sample list)
+sample_order <- admixK2_df$SampleID
+
+# Melt
+admixK2_melt <- melt(admixK2_df, id.vars = c("SampleID", "Population"))
+
+# Plot
+ggplot(admixK2_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  geom_bar(stat = "identity", width = 1, color = "black") +  # black lines between bars
+  facet_grid(~Population, scales = "free_x", space = "free_x") +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 7),
+    panel.spacing = unit(0, "lines")  # optional: removes space between populations
+  ) +
+  labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+ggsave("admixture_K2.png", width = 10, height = 2, dpi = 300)
+
+
+##Admixture graph for K=1
+
+# Load files for K=1
+samples <- read.csv("sample-pop-list.csv", header = FALSE)
+admixK1 <- read.table("pruned_biallelic_reformat_fixed.1.Q", header = FALSE)
+
+# Combine metadata and admixture
+admixK1_df <- cbind(samples, admixK1)
+
+# Rename columns
+colnames(admixK1_df)[-(1:2)] <- paste0("Cluster", 1:(ncol(admixK1_df)-2))
+
+# Plot
+library(reshape2)
+library(ggplot2)
+
+colnames(admixK1_df)[1:2] <- c("SampleID", "Population")
+
+
+# Create ordering BEFORE melting (unique sample list)
+sample_order <- admixK1_df$SampleID
+
+# Melt
+admixK1_melt <- melt(admixK1_df, id.vars = c("SampleID", "Population"))
+
+# Plot
+ggplot(admixK1_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  geom_bar(stat = "identity", width = 1, color = "black") +  # black lines between bars
+  facet_grid(~Population, scales = "free_x", space = "free_x") +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 7),
+    panel.spacing = unit(0, "lines")  # optional: removes space between populations
+  ) +
+  labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+ggsave("admixture_K1.png", width = 10, height = 2, dpi = 300)
+  
+  
+
+  ###############################################################################################
+  ###############################################################################################
+  ###########CODE BETWEEN THIS LINE IS OLD CODE RAN ON THE FILTERED VCF FILE - UNPRUNED##########
+  ###############################################################################################
+  ###############################################################################################
+
+ 
+ #run NGSadmix to estimate admixture proportions (multiple K values, replicates, and cross-validation)
+ 
+ 	##(saved as admix-K-values.sh)
+	#!/bin/bash
+	#load the NGSadmix package using the anaconda environment
+	#export PATH=/apps/x86-64/apps/anaconda_3-2020.07/bin:$PATH
+	#place the NGSadmix commands here
+	#beagle_file="gfk_admix.beagle.gz" 
+	#output_prefix="ngsadmix_GFK"
+	#num_reps=5     # Number of replicates per K
+	#max_K=10       # Max K to test
+	#num_threads=4  # Adjust based on your system
+
+	# Loop over K and replicates
+	#for K in $(seq 1 $max_K); do
+  	#for rep in $(seq 1 $num_reps); do
+    	#seed=$(( RANDOM ))
+    	#echo "Running NGSadmix for K=$K replicate $rep (seed=$seed)"
+    	#NGSadmix -likes $beagle_file \
+             	#-K $K \
+             	#-o ${output_prefix}_K${K}_rep${rep} \
+             	#-P $num_threads \
+             	#-minMaf 0.05 \
+             	#-seed $seed
+  		#done
+	#done
+	
+	#this produces four files: .fopt.gz, .log, .qopt, and .filter
+  	#ngsadmix does not have built in cross-validation so it can be manually checked using log likelihoods
+  	#collect the log likelihoods from the .log files to determine the best K
+  	#can create a summary table by extracting all log likelihoods:
+  			#grep "like=" ngsadmix_GFK_K*_rep*.log > likelihood_summary.txt
+
+#ngsadmix_GFK_K10_rep1.log:best like=-4335876.467543 after 1066 iterations
+#ngsadmix_GFK_K10_rep2.log:best like=-4367313.461434 after 700 iterations
+#ngsadmix_GFK_K10_rep3.log:best like=-4328178.168585 after 377 iterations
+#ngsadmix_GFK_K10_rep4.log:best like=-4334842.457828 after 696 iterations
+#ngsadmix_GFK_K10_rep5.log:best like=-4360693.023542 after 750 iterations
+#ngsadmix_GFK_K1_rep1.log:best like=-5518073.962384 after 6 iterations
+#ngsadmix_GFK_K1_rep2.log:best like=-5518073.962384 after 6 iterations
+#ngsadmix_GFK_K1_rep3.log:best like=-5518099.580611 after 6 iterations
+#ngsadmix_GFK_K1_rep4.log:best like=-5518073.962384 after 6 iterations
+#ngsadmix_GFK_K1_rep5.log:best like=-5518073.962384 after 6 iterations
+#ngsadmix_GFK_K2_rep1.log:best like=-5303827.524385 after 350 iterations
+#ngsadmix_GFK_K2_rep2.log:best like=-5303797.431617 after 401 iterations
+#ngsadmix_GFK_K2_rep3.log:best like=-5303838.672363 after 512 iterations
+#ngsadmix_GFK_K2_rep4.log:best like=-5303797.727727 after 303 iterations
+#ngsadmix_GFK_K2_rep5.log:best like=-5303815.114431 after 213 iterations
+#ngsadmix_GFK_K3_rep1.log:best like=-5171699.538761 after 395 iterations
+#ngsadmix_GFK_K3_rep2.log:best like=-5178332.924526 after 598 iterations
+#ngsadmix_GFK_K3_rep3.log:best like=-5179556.370210 after 864 iterations
+#ngsadmix_GFK_K3_rep4.log:best like=-5188210.932575 after 700 iterations
+#ngsadmix_GFK_K3_rep5.log:best like=-5173282.615459 after 377 iterations
+#ngsadmix_GFK_K4_rep1.log:best like=-5048614.877665 after 1350 iterations
+#ngsadmix_GFK_K4_rep2.log:best like=-5056768.590666 after 1488 iterations
+#ngsadmix_GFK_K4_rep3.log:best like=-5051540.230543 after 1294 iterations
+#ngsadmix_GFK_K4_rep4.log:best like=-5049016.542641 after 800 iterations
+#ngsadmix_GFK_K4_rep5.log:best like=-5051203.925917 after 400 iterations
+#ngsadmix_GFK_K5_rep1.log:best like=-4943955.581055 after 950 iterations
+#ngsadmix_GFK_K5_rep2.log:best like=-4926993.348106 after 1000 iterations
+#ngsadmix_GFK_K5_rep3.log:best like=-4939994.173539 after 500 iterations
+#ngsadmix_GFK_K5_rep4.log:best like=-4925084.727835 after 852 iterations
+#ngsadmix_GFK_K5_rep5.log:best like=-4923801.550396 after 748 iterations
+#ngsadmix_GFK_K6_rep1.log:best like=-4811472.710343 after 500 iterations
+#ngsadmix_GFK_K6_rep2.log:best like=-4802353.645105 after 550 iterations
+#ngsadmix_GFK_K6_rep3.log:best like=-4809942.917806 after 797 iterations
+#ngsadmix_GFK_K6_rep4.log:best like=-4822186.875455 after 705 iterations
+#ngsadmix_GFK_K6_rep5.log:best like=-4825876.235565 after 387 iterations
+#ngsadmix_GFK_K7_rep1.log:best like=-4721696.895897 after 782 iterations
+#ngsadmix_GFK_K7_rep2.log:best like=-4699248.383170 after 684 iterations
+#ngsadmix_GFK_K7_rep3.log:best like=-4682465.581475 after 650 iterations
+#ngsadmix_GFK_K7_rep4.log:best like=-4696409.844378 after 650 iterations
+#ngsadmix_GFK_K7_rep5.log:best like=-4688537.843326 after 1118 iterations
+#ngsadmix_GFK_K8_rep1.log:best like=-4572117.352741 after 398 iterations
+#ngsadmix_GFK_K8_rep2.log:best like=-4570921.496112 after 370 iterations
+#ngsadmix_GFK_K8_rep3.log:best like=-4586030.730574 after 1143 iterations
+#ngsadmix_GFK_K8_rep4.log:best like=-4568418.612751 after 989 iterations
+#ngsadmix_GFK_K8_rep5.log:best like=-4573827.918474 after 743 iterations
+#ngsadmix_GFK_K9_rep1.log:best like=-4460738.510305 after 595 iterations
+#ngsadmix_GFK_K9_rep2.log:best like=-4457691.196739 after 549 iterations
+#ngsadmix_GFK_K9_rep3.log:best like=-4471231.106497 after 1200 iterations
+#ngsadmix_GFK_K9_rep4.log:best like=-4456482.590558 after 679 iterations
+#ngsadmix_GFK_K9_rep5.log:best like=-4460202.240710 after 547 iterations
+  
+  
+  
+  #R-studio showed that the elbow appears to be at K=2, but to produce barplots for K=2, 3,and 4.
+  
+  #transfer .qopt files (only transfer over one rep and go with that one [this should be
+  #a rep that has consistent iterations across it. looking at my data, the iterations were more consistent during rep 3]; they were all consistent numbers across reps; rep 3)
+  
+#scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP/ngsadmix_GFK_K2_rep3.qopt /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+  
+#scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP/ngsadmix_GFK_K3_rep3.qopt /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+
+#scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/killifish-rnaseq-SNP/ngsadmix_GFK_K4_rep3.qopt /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/
+
+  
+  #################################R-studio script
+  
+  
+  #looking at K values to determine which K is best for admixture (ancestral)
+
+#library(dplyr)
+#library(ggplot2)
+#install.packages("readr")
+#library(readr)
+
+#setwd("~/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1")
+
+
+# Load your CSV (replace with your actual file path)
+#data <- read_csv("Kvalues-reps.csv")
+
+# Plot log-likelihoods vs K
+#ggplot(data, aes(x = K, y = logL)) +
+  #geom_point(alpha = 0.6) +
+  #geom_smooth(method = "loess", se = FALSE, color = "blue") +
+  #theme_minimal() +
+  #labs(title = "NGSadmix Log-Likelihood vs. K",
+       #x = "Number of Clusters (K)",
+       #y = "Log-Likelihood")
+
+
+
+#summary_data <- data %>%
+  #group_by(K) %>%
+  #summarise(mean_logL = mean(logL), sd_logL = sd(logL))
+
+#ggplot(summary_data, aes(x = K, y = mean_logL)) +
+  #geom_line() +
+  #geom_point() +
+  #geom_errorbar(aes(ymin = mean_logL - sd_logL, ymax = mean_logL + sd_logL), width = 0.2) +
+  #theme_minimal() +
+  #labs(title = "Mean Log-Likelihood with Error Bars by K",
+       #x = "Number of Clusters (K)",
+       #y = "Mean Log-Likelihood")
+
+
+########K=2 is where the elbow is; biologically meaningful 			#the elbow is the dip before the line straightens out
+########create barplots Q-matrices for K=2, and 3-4.				
+#transferred .qopt files from linux terminal to working directory
+
+#install.packages("reshape2")
+#library(reshape2)
+
+########this is for K=2
+
+# Load files
+#samples <- read.csv("sample-pop-list.csv", header = FALSE)
+#admixK2 <- read.table("ngsadmix_GFK_K2_rep3.qopt", header = FALSE)
+
+# Combine metadata and admixture
+#admixK2_df <- cbind(samples, admixK2)
+
+# Rename columns
+#colnames(admixK2_df)[-(1:2)] <- paste0("Cluster", 1:(ncol(admixK2_df)-2))
+
+# Plot
+#library(reshape2)
+#library(ggplot2)
+
+#colnames(admixK2_df)[1:2] <- c("SampleID", "Population")
+
+
+# Create ordering BEFORE melting (unique sample list)
+s#ample_order <- admixK2_df$SampleID
+
+# Melt
+#admixK2_melt <- melt(admixK2_df, id.vars = c("SampleID", "Population"))
+
+# Plot with correct ordering WITH no spaces
+#ggplot(admixK2_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  #geom_bar(stat = "identity", width = 1) +  # width = 1 removes space between bars
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 7)) +
+  #labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+#ggsave("admixture_K2.png", width = 10, height = 2, dpi = 300)
+
+#OR with lines to separate samples
+#ggplot(admixK2_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  #geom_bar(stat = "identity") +
+  #facet_grid(~Population, scales = "free_x", space = "free_x") +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 7)) +
+  #labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+
+#ggplot(admixK2_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  #geom_bar(stat = "identity", width = 1, color = "black") +  # black lines between bars
+  #facet_grid(~Population, scales = "free_x", space = "free_x") +
+  #theme(
+    #axis.text.x = element_text(angle = 90, hjust = 1, size = 7),
+    #panel.spacing = unit(0, "lines")  # optional: removes space between populations
+  #) +
+  #labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+#ggsave("admixture_K2blacklines.png", width = 10, height = 2, dpi = 300)
+
+
+###############EVERYTHING BELOW THIS LINE IS JUST FOR K=3 and K=4 just to see what it looks like but we went with K=2
+
+########this is for K=3
+
+# Load files
+#samples <- read.csv("sample-pop-list.csv", header = FALSE)
+#admixK3 <- read.table("ngsadmix_GFK_K3_rep3.qopt", header = FALSE)
+
+# Combine metadata and admixture
+#admixK3_df <- cbind(samples, admixK3)
+
+# Rename columns
+#colnames(admixK3_df)[-(1:2)] <- paste0("Cluster", 1:(ncol(admixK3_df)-2))
+
+# Plot
+#library(reshape2)
+#library(ggplot2)
+
+#colnames(admixK3_df)[1:2] <- c("SampleID", "Population")
+
+
+# Create ordering BEFORE melting (unique sample list)
+#sample_order <- admixK3_df$SampleID
+
+# Melt
+#admixK3_melt <- melt(admixK3_df, id.vars = c("SampleID", "Population"))
+
+# Plot with correct ordering
+#ggplot(admixK3_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  #geom_bar(stat = "identity") +
+  #facet_grid(~Population, scales = "free_x", space = "free_x") +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 7)) +
+  #labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+
+########this is for K=4
+
+# Load files
+#samples <- read.csv("sample-pop-list.csv", header = FALSE)
+#admixK4 <- read.table("ngsadmix_GFK_K4_rep3.qopt", header = FALSE)
+
+# Combine metadata and admixture
+#admixK4_df <- cbind(samples, admixK4)
+
+# Rename columns
+#colnames(admixK4_df)[-(1:2)] <- paste0("Cluster", 1:(ncol(admixK4_df)-2))
+
+# Plot
+#library(reshape2)
+#library(ggplot2)
+
+#colnames(admixK4_df)[1:2] <- c("SampleID", "Population")
+
+
+# Create ordering BEFORE melting (unique sample list)
+#sample_order <- admixK4_df$SampleID
+
+# Melt
+#admixK4_melt <- melt(admixK4_df, id.vars = c("SampleID", "Population"))
+
+# Plot with correct ordering
+#ggplot(admixK4_melt, aes(x = factor(SampleID, levels = sample_order), y = value, fill = variable)) +
+  #geom_bar(stat = "identity") +
+  #facet_grid(~Population, scales = "free_x", space = "free_x") +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 7)) +
+  #labs(x = "Samples", y = "Ancestry Proportion", fill = "Cluster")
+
+
+###############################################################################################
+###############################################################################################
+###########CODE BETWEEN THIS LINE IS OLD CODE RAN ON THE FILTERED VCF FILE - UNPRUNED##########
+###############################################################################################
+###############################################################################################
+
+
+
+
+
+##############R script for producing PCA, calculating Fst(again), and identifying Fst outliers
+  
+  setwd('~/Desktop/antrelle-snps/')
+
+library('vcfR')
+#grab the original file and give the ID column a value using vcfR
+x<-read.vcfR('gfk-snps-filter90.recode')
+head (x)
+y<-addID(x, sep = "_")
+head(y)
+write.vcf(y, "gfk-snps-filter90-with-ID")
+
+####Estimates of Fst and PCA 
+library('adegenet')
+library ('hierfstat')
+library ('pegas')
+library('ape')
+
+x<-read.vcfR('killifish-pruned-final-74k.vcf')
+my_genind <- vcfR2genind(x)
+my_genind
+head(indNames(my_genind), 37)
+
+#Set populations #start here
+pops_list <- read.table('snp-pops.txt', sep='\t', header=FALSE)
+pops_list
+strata(my_genind) <- pops_list #set this outsite list as a population using STRATA
+setPop(my_genind)<-~V2 #the V2 column (imported through strata) has the population names 
+my_genind #confirm populations are now included 
+
+pairwise.WCfst(my_genind,diploid=TRUE)
+# Fst of Long vs Weakly = 0.01704393 
+
+basic.stats(my_genind,diploid=TRUE,digits=4)
+#Ho     Hs      Ht    Dst    Htp    Dstp    Fst   Fstp    Fis   Dest 
+#0.2516 0.2627 0.2650 0.0023 0.2673 0.0046 0.0086 0.0171 0.0423 0.0062 
+
+##PCA adegenet
+xx <- tab(my_genind, freq=TRUE, NA.method="mean")
+yy<- dudi.pca(xx, center=TRUE, scale=FALSE) #36 axis retained 
+
+eig.perc <- 100*yy$eig/sum(yy$eig)
+head(eig.perc)
+#[1] 4.506779 3.114392 3.018161 2.992912 2.976768 2.962835 this is the %of the variance explained by the PCA. Very small
+
+s.class(yy$li, fac=pop(my_genind), col=transp(funky(3),.7), axesel=FALSE, cstar=1, cpoint=4)
+#here using the "Funky" color scale, with the #3 variant look online for other alternatives
+add.scatter.eig(yy$eig[1:36],3,1,2, ratio=.3) #this shows the variance contained in the eigenvalues
+
+##PCoA adegenet to compare with PCA
+xy<- dudi.pco(dist(xx), scannf=FALSE, nf=3) 
+cor(yy$li, xy$li)^2 #how is the PCO different from PCA? shows table!
+s.class(xy$li, fac=pop(my_genind), col=transp(wasp(3),.7), axesel=FALSE, cstar=1, cpoint=4)
+#here using the "Funky" color scale, with the #3 variant look online for other alternatives
+add.scatter.eig(xy$eig[1:36],3,1,2, ratio=.3) #no major difference in shape... go with the PCA
+
+#FST outliers using Outflank - https://baylab.github.io/MarineGenomics/week-7-fst-and-outlier-analysis.html
+
+library('devtools')
+library('OutFLANK')
+library('vcfR')
+data <- read.vcfR('killifish-pruned-final-74k.vcf')
+geno <- extract.gt(data)
+dim(geno)
+#74759    37
+head(geno[,1:10])
+
+#Notice that as our genotypes look like 0/0, 0/1, and 1/1. But OutFLANK wants them to be 0, 1, or 2.
+G <- geno  
+G[geno %in% c("0/0")] <- 0
+G[geno  %in% c("0/1")] <- 1
+G[geno %in% c("1/1")] <- 2
+G[is.na(G)] <- 9
+table(as.vector(G))
+tG <- t(G) #this TRANSPOSES the 
+dim(tG)
+head(tG)
+
+pops_list <- read.table('snp-pops.txt', sep='\t', header=FALSE)
+pops_list
+
+fst <- OutFLANK::MakeDiploidFSTMat(tG,locusNames=row.names(G),popNames=pops_list$V2)
+head(fst)
+hist(fst$FST,breaks=50)
+summary(fst$FST) 
+###Min.     1st Qu.   Median    Mean      3rd Qu.   Max.      NA's 
+#-0.115861 -0.023322 -0.005807  0.011769  0.024673  0.642719  16
+
+plot(fst$He,fst$FST) #Look for relationship of He and Fst
+
+plot(fst$FST,fst$FSTNoCorr) 
+abline(0,1) #Look for loci that don't have a linear relationship 
+
+OF <- OutFLANK(fst,LeftTrimFraction=0.01,RightTrimFraction=0.01,Hmin=0.05,NumberOfSamples=2,qthreshold=0.1)
+OutFLANKResultsPlotter(OF,withOutliers=T,NoCorr=T,Hmin=0.1,binwidth=0.005,Zoom=F,RightZoomFraction=0.05,titletext=NULL)
+#OutFLANK does this by fitting a Chi-Squared distribution to the data and looking to see if the tails of the Chi-Squared distribution have more SNPs than expected
+#qthreshold= This is the desired false discovery rate (FDR) - Here it is 10%
+#NumberOfSamples= number of populations
+#Hmin = minimum heterozygosity
+#RightTrimFraction=0.01: he proportion of loci to be trimmed from the upper end of the FST distribution.
+#LeftTrimFraction=0.01proportion of loci to be trimmed from the lower end of the FST distribution.
+
+P1 <- pOutlierFinderChiSqNoCorr(fst,Fstbar=OF$FSTNoCorrbar, dfInferred=OF$dfInferred,qthreshold=0.1,Hmin=0.1)
+P1<-na.omit(P1)
+outliers <- P1$OutlierFlag==TRUE #which of the SNPs are outliers?
+table(outliers)
+outliers
+
+my_out <- P1$OutlierFlag==TRUE
+#my_out has 56470 SNPs because NA's were omitted 
+
+rows_to_keep <- P1 [P1$He] >0.1
+x<-row.names(rows_to_keep) #In this case the "real" locus name cannot be used, you have to use the SNP number that characterizes the row
+y<-P1$FST[P1$He>0.1]
+
+plot(x, y, xlab="Position", ylab="FST", col=rgb(0,0,0,0.2))
+points(x[my_out], P1$FST[my_out], col="magenta", pch=20)  
+
+xy<-x[my_out]# these are the numbers of the outlier genes: "11337" "16510" "28814" "29369" "38349"
+final_outs<-P1[xy,]
+final_outs
+write.table(final_outs, file='Fstoutliers.txt', sep='\t')
+
+
+######LD decay graph - R
+  
+ setwd('~/Desktop/antrelle-snps/')
+
+library(tidyverse)
+my_bins<- './plinkLD-plots-5M.ld_decay_bins'
+ld_bins<-read_tsv (my_bins)
+ggplot(ld_bins, aes(distance, avg_R2)) + geom_line() +
+  xlab("Distance (bp)") + ylab(expression(italic(r)^2))
+  	
