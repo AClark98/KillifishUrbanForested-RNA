@@ -703,9 +703,6 @@ dev.off()
 
 
 
-
-
-
 # Make the Heatmap object
 module_darkgreen_heatmap <- make_module_heatmap(module_name = "MEdarkgreen")
 
@@ -718,21 +715,7 @@ ComplexHeatmap::draw(module_darkgreen_heatmap)
 dev.off()
 
 
-#######START HERE
-
-###Specify which module you want to investigate; going to investigate the module that is associated with osmoregulation/ion transport
-
 head(annot)
-
-
-
-
-
-
-
-
-
-
 
 
 #As a sanity check, let's use ggplot to see what module XX's eigengene looks like between treatment groups.
