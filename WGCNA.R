@@ -2013,3 +2013,12 @@ results=gomwuPlot(input,goAnnotations,goDivision,
 
 # text representation of results, with actual adjusted p-values
 results[[1]]
+
+
+
+
+###NOTE: compile all GO terms for a certain module into an excel sheet
+###NOTE: you will have to reformat the table because the contents will be bunched together
+###NOTE: once that is done, you will need to look at the padj and look for signficantly
+#########enriched GO terms. They will be significant at the raw p-value but also significant
+########after applying the FDR correction (GO-MWU); these are the terms you need
