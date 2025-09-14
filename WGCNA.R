@@ -2022,3 +2022,4 @@ results[[1]]
 ###NOTE: once that is done, you will need to look at the padj and look for signficantly
 #########enriched GO terms. They will be significant at the raw p-value but also significant
 ########after applying the FDR correction (GO-MWU); these are the terms you need
+########If it has a 1 in the padj slot that means they did not survive the FDR correction of 0.1(10%)
