@@ -2023,3 +2023,6 @@ results[[1]]
 #########enriched GO terms. They will be significant at the raw p-value but also significant
 ########after applying the FDR correction (GO-MWU); these are the terms you need
 ########If it has a 1 in the padj slot that means they did not survive the FDR correction of 0.1(10%)
+####NOTE: it can say 14 GO terms passed 10% FDR but when you put them all in excel, you get 8.
+#########This is normal. It removes redundancy during filtering so you can report how many
+#########passed the 10% FDR but this many were unique to reduce redundancy.
