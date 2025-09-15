@@ -2084,7 +2084,7 @@ head(rownames(traitData))
 
         # Now calculate gene significance (GS)
         geneSignificance = as.data.frame(cor(datExpr_t, traitData_numeric, use = "p"))
-
+        GS_pvalue = as.data.frame(corPvalueStudent(as.matrix(geneSignificance), nSamples))
                
 #########MODULE PINK (significantly associated with treatment variable in my dataset which is the population x treatment interaction)
         
@@ -2102,8 +2102,14 @@ moduleGenes = moduleColors == module
 intramodular = data.frame(
   gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
   MM   = geneModuleMembership[moduleGenes, column],   # module membership
-  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+  GS   = geneSignificance[moduleGenes, trait],         # gene significance
+  MM_pvalue = MMPvalue[moduleGenes, column],
+  GS_pvalue = GS_pvalue[moduleGenes, trait]
 )
+
+#Add adjusted p-values
+intramodular$MM_padjust = p.adjust(intramodular$MM_pvalue, method = "BH") #Benjamini-Hochberg correction applied
+intramodular$GS_padjust = p.adjust(intramodular$GS_pvalue, method = "BH") #Benjamini-Hochberg correction applied
 
 
 # Plot MM vs GS
@@ -2119,6 +2125,7 @@ verboseScatterplot(
   col = module
 )
 
+
 ####extract top hub genes for the MEpink module
 
 
@@ -2127,33 +2134,32 @@ topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), 
 
 # Top 10 hub genes
 head(topHubGenes, 10)
-                       #gene        MM         GS
-#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578
-#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898
-#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307
-#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253
-#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462
-#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544
-#468 gene:ENSFHEG00000020278 0.8290693 -0.2995729
-#528 gene:ENSFHEG00000017282 0.8256888 -0.5589604
-#548 gene:ENSFHEG00000008858 0.8250066 -0.3491964
-#203 gene:ENSFHEG00000013010 0.8221956 -0.2603709
+                       #gene        MM         GS    MM_pvalue    GS_pvalue   MM_padjust GS_padjust
+#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578 7.883118e-15 0.0211613151 4.934832e-12 0.14398895
+#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898 1.076765e-12 0.0232234842 3.370276e-10 0.15000847
+#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307 4.330560e-12 0.0190822416 9.036435e-10 0.13272759
+#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253 7.913847e-12 0.0155333323 1.238517e-09 0.12185890
+#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462 8.029432e-11 0.0131582701 9.665396e-09 0.11202356
+#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544 9.263958e-11 0.0516021618 9.665396e-09 0.20575129
+#468 gene:ENSFHEG00000020278 0.8290693 -0.2995729 2.324870e-10 0.0716539172 2.079098e-08 0.23962276
+#528 gene:ENSFHEG00000017282 0.8256888 -0.5589604 3.182913e-10 0.0003231956 2.356861e-08 0.04261611
+#548 gene:ENSFHEG00000008858 0.8250066 -0.3491964 3.388458e-10 0.0341437213 2.356861e-08 0.16986913
+#203 gene:ENSFHEG00000013010 0.8221956 -0.2603709 4.372921e-10 0.1196136583 2.737448e-08 0.32288711
 
 
-# Save all hub genes for pink module related to treatment(population x treatment interaction)
+# Save all hub genes for pink module related to treatment (population x treatment interaction)
 write.csv(topHubGenes, "HubGenes_pink_treatment.csv", row.names = FALSE)
 
 #Gives you a list of genes that are highly correlated for reporting
 hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.2)
 head(hubGenes_filtered)
-#gene        MM        GS
-                       #gene        MM         GS
-#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578
-#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898
-#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307
-#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253
-#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462
-#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544
+                       #gene        MM         GS    MM_pvalue  GS_pvalue   MM_padjust GS_padjust
+#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578 7.883118e-15 0.02116132 4.934832e-12  0.1439889
+#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898 1.076765e-12 0.02322348 3.370276e-10  0.1500085
+#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307 4.330560e-12 0.01908224 9.036435e-10  0.1327276
+#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253 7.913847e-12 0.01553333 1.238517e-09  0.1218589
+#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462 8.029432e-11 0.01315827 9.665396e-09  0.1120236
+#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544 9.263958e-11 0.05160216 9.665396e-09  0.2057513
 
 write.csv(hubGenes_filtered, "HubGenes_filtered_pink_treatment.csv", row.names = FALSE)
 
@@ -2175,8 +2181,14 @@ moduleGenes = moduleColors == module
 intramodular = data.frame(
   gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
   MM   = geneModuleMembership[moduleGenes, column],   # module membership
-  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+  GS   = geneSignificance[moduleGenes, trait],         # gene significance
+  MM_pvalue = MMPvalue[moduleGenes, column],
+  GS_pvalue = GS_pvalue[moduleGenes, trait]
 )
+
+#Add adjusted p-values
+intramodular$MM_padjust = p.adjust(intramodular$MM_pvalue, method = "BH") #Benjamini-Hochberg correction applied
+intramodular$GS_padjust = p.adjust(intramodular$GS_pvalue, method = "BH") #Benjamini-Hochberg correction applied
 
 
 # Plot MM vs GS
@@ -2200,20 +2212,20 @@ topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), 
 
 # Top 10 hub genes
 head(topHubGenes, 10)
-                      #gene        MM         GS
-#654 gene:ENSFHEG00000019007 0.8733233 0.3445413
-#7   gene:ENSFHEG00000006701 0.8652118 0.4348735
-#80  gene:ENSFHEG00000020075 0.8603864 0.4111710
-#612 gene:ENSFHEG00000008645 0.8505435 0.4186400
-#143 gene:ENSFHEG00000002699 0.8378052 0.3084076
-#336 gene:ENSFHEG00000002411 0.8365725 0.4427553
-#505 gene:ENSFHEG00000005692 0.8324995 0.2553721
-#242 gene:ENSFHEG00000013401 0.8309436 0.3223702
-#497 gene:ENSFHEG00000014664 0.8299732 0.4173371
-#726 gene:ENSFHEG00000011919 0.8272840 0.3585879
+                      #gene        MM        GS    MM_pvalue   GS_pvalue   MM_padjust GS_padjust
+#654 gene:ENSFHEG00000019007 0.8733233 0.3445413 1.778118e-12 0.036775338 1.433163e-09 0.14319286
+#7   gene:ENSFHEG00000006701 0.8652118 0.4348735 4.925714e-12 0.007150419 1.985063e-09 0.06003373
+#80  gene:ENSFHEG00000020075 0.8603864 0.4111710 8.757363e-12 0.011466916 2.352812e-09 0.07453495
+#612 gene:ENSFHEG00000008645 0.8505435 0.4186400 2.657491e-11 0.009915994 5.354844e-09 0.06889906
+#143 gene:ENSFHEG00000002699 0.8378052 0.3084076 9.992912e-11 0.063291057 1.516744e-08 0.18550034
+#336 gene:ENSFHEG00000002411 0.8365725 0.4427553 1.129090e-10 0.006066185 1.516744e-08 0.05671409
+#505 gene:ENSFHEG00000005692 0.8324995 0.2553721 1.678452e-10 0.127141283 1.912105e-08 0.28160163
+#242 gene:ENSFHEG00000013401 0.8309436 0.3223702 1.947506e-10 0.051666709 1.912105e-08 0.16791680
+#497 gene:ENSFHEG00000014664 0.8299732 0.4173371 2.135105e-10 0.010172897 1.912105e-08 0.06890214
+#726 gene:ENSFHEG00000011919 0.8272840 0.3585879 2.746701e-10 0.029302145 2.038839e-08 0.12766232
 
 
-# Save all hub genes for pink module related to treatment(population x treatment interaction)
+# Save all hub genes for darkgreen module related to salinity (treatment exposure)
 write.csv(topHubGenes, "HubGenes_darkgreen_salinity.csv", row.names = FALSE)
 
 #gives you a list of genes that are highly correlated for reporting
@@ -2247,8 +2259,14 @@ moduleGenes = moduleColors == module
 intramodular = data.frame(
   gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
   MM   = geneModuleMembership[moduleGenes, column],   # module membership
-  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+  GS   = geneSignificance[moduleGenes, trait],         # gene significance
+  MM_pvalue = MMPvalue[moduleGenes, column],
+  GS_pvalue = GS_pvalue[moduleGenes, trait]
 )
+
+#Add adjusted p-values
+intramodular$MM_padjust = p.adjust(intramodular$MM_pvalue, method = "BH") #Benjamini-Hochberg correction applied
+intramodular$GS_padjust = p.adjust(intramodular$GS_pvalue, method = "BH") #Benjamini-Hochberg correction applied
 
 
 # Plot MM vs GS
@@ -2263,7 +2281,6 @@ verboseScatterplot(
   cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2,
   col = module
 )
-
 ####extract top hub genes for the MEtan module
 
 
@@ -2272,17 +2289,17 @@ topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), 
 
 # Top 10 hub genes
 head(topHubGenes, 10)
-                      #gene        MM         GS
-#151 gene:ENSFHEG00000006981 0.9121473 0.2378776
-#18  gene:ENSFHEG00000023306 0.8884549 0.1189022
-#121 gene:ENSFHEG00000021993 0.8707211 0.2854422
-#125 gene:ENSFHEG00000022652 0.8642861 0.3142653
-#299 gene:ENSFHEG00000014685 0.8568540 0.2641715
-#155 gene:ENSFHEG00000021672 0.8498176 0.2599087
-#270 gene:ENSFHEG00000018640 0.8475635 0.4422910
-#260 gene:ENSFHEG00000017160 0.8472918 0.3779972
-#220 gene:ENSFHEG00000007329 0.8329899 0.1055921
-#30  gene:ENSFHEG00000009617 0.8260525 0.3716563
+                       #gene        MM        GS    MM_pvalue   GS_pvalue   MM_padjust GS_padjust
+#151 gene:ENSFHEG00000006981 0.9121473 0.2378776 4.043342e-15 0.156268304 1.665857e-12  0.4075083
+#18  gene:ENSFHEG00000023306 0.8884549 0.1189022 2.174402e-13 0.483351389 4.479268e-11  0.6943905
+#121 gene:ENSFHEG00000021993 0.8707211 0.2854422 2.483985e-12 0.086801395 3.411339e-10  0.3311592
+#125 gene:ENSFHEG00000022652 0.8642861 0.3142653 5.509988e-12 0.058185370 5.675288e-10  0.2830428
+#299 gene:ENSFHEG00000014685 0.8568540 0.2641715 1.316711e-11 0.114117576 1.084970e-09  0.3702082
+#155 gene:ENSFHEG00000021672 0.8498176 0.2599087 2.875139e-11 0.120295290 1.941050e-09  0.3765483
+#270 gene:ENSFHEG00000018640 0.8475635 0.4422910 3.661739e-11 0.006125875 1.941050e-09  0.1402145
+#260 gene:ENSFHEG00000017160 0.8472918 0.3779972 3.769029e-11 0.021073015 1.941050e-09  0.1977471
+#220 gene:ENSFHEG00000007329 0.8329899 0.1055921 1.601120e-10 0.533948898 7.329570e-09  0.7308536
+#30  gene:ENSFHEG00000009617 0.8260525 0.3716563 3.078125e-10 0.023517782 1.171025e-08  0.1992112
 
 
 # Save all hub genes for pink module related to population (origin of population variable)
@@ -2291,15 +2308,20 @@ write.csv(topHubGenes, "HubGenes_tan_population.csv", row.names = FALSE)
 #Gives you a list of genes that are highly correlated for reporting
 hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.2)
 head(hubGenes_filtered)
-                      #gene        MM        GS
-#151 gene:ENSFHEG00000006981 0.9121473 0.2378776
-#121 gene:ENSFHEG00000021993 0.8707211 0.2854422
-#125 gene:ENSFHEG00000022652 0.8642861 0.3142653
-#299 gene:ENSFHEG00000014685 0.8568540 0.2641715
-#155 gene:ENSFHEG00000021672 0.8498176 0.2599087
-#270 gene:ENSFHEG00000018640 0.8475635 0.4422910
+                       #gene        MM        GS    MM_pvalue   GS_pvalue   MM_padjust GS_padjust
+#151 gene:ENSFHEG00000006981 0.9121473 0.2378776 4.043342e-15 0.156268304 1.665857e-12  0.4075083
+#121 gene:ENSFHEG00000021993 0.8707211 0.2854422 2.483985e-12 0.086801395 3.411339e-10  0.3311592
+#125 gene:ENSFHEG00000022652 0.8642861 0.3142653 5.509988e-12 0.058185370 5.675288e-10  0.2830428
+#299 gene:ENSFHEG00000014685 0.8568540 0.2641715 1.316711e-11 0.114117576 1.084970e-09  0.3702082
+#155 gene:ENSFHEG00000021672 0.8498176 0.2599087 2.875139e-11 0.120295290 1.941050e-09  0.3765483
+#270 gene:ENSFHEG00000018640 0.8475635 0.4422910 3.661739e-11 0.006125875 1.941050e-09  0.1402145
 
 write.csv(hubGenes_filtered, "HubGenes_filtered_tan_population.csv", row.names = FALSE)
 
+    ####NOTE:p-values and adjusted p-values were included but are not the key to identifying
+    ####hub genes. Hub genes are based on high MM and high GS, not FDR or padj <0.05. They are
+    ####there to include in supplemental but note that these are not parameters that tells you
+    ####what the hub genes are. Only MM and GS does. Gene signficance can have a + or - value,
+    ####as long as it is not 0. Gene signficance shows how biologically relevant it is.
 
 ###Annotate genes for .csv with genes and their corresponding modules by merging filtered hubGenes .csv with gene annotation file (mine is Mummichog.gtf)
