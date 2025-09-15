@@ -2144,7 +2144,7 @@ head(topHubGenes, 10)
 write.csv(topHubGenes, "HubGenes_pink_treatment.csv", row.names = FALSE)
 
 #Gives you a list of genes that are highly correlated for reporting
-hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.2)
 head(hubGenes_filtered)
 #gene        MM        GS
                        #gene        MM         GS
@@ -2217,7 +2217,7 @@ head(topHubGenes, 10)
 write.csv(topHubGenes, "HubGenes_darkgreen_salinity.csv", row.names = FALSE)
 
 #gives you a list of genes that are highly correlated for reporting
-hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.2)
 head(hubGenes_filtered)
                       #gene        MM        GS
 #654 gene:ENSFHEG00000019007 0.8733233 0.3445413
@@ -2289,15 +2289,15 @@ head(topHubGenes, 10)
 write.csv(topHubGenes, "HubGenes_tan_population.csv", row.names = FALSE)
 
 #Gives you a list of genes that are highly correlated for reporting
-hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.2)
 head(hubGenes_filtered)
                       #gene        MM        GS
+#151 gene:ENSFHEG00000006981 0.9121473 0.2378776
+#121 gene:ENSFHEG00000021993 0.8707211 0.2854422
 #125 gene:ENSFHEG00000022652 0.8642861 0.3142653
+#299 gene:ENSFHEG00000014685 0.8568540 0.2641715
+#155 gene:ENSFHEG00000021672 0.8498176 0.2599087
 #270 gene:ENSFHEG00000018640 0.8475635 0.4422910
-#260 gene:ENSFHEG00000017160 0.8472918 0.3779972
-#30  gene:ENSFHEG00000009617 0.8260525 0.3716563
-#134 gene:ENSFHEG00000020568 0.8238148 0.4044722
-#347 gene:ENSFHEG00000013461 0.8215138 0.3553341
 
 write.csv(hubGenes_filtered, "HubGenes_filtered_tan_population.csv", row.names = FALSE)
 
