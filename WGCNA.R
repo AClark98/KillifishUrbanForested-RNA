@@ -2026,14 +2026,11 @@ results[[1]]
 
 ################################################################################PROCEED BEYOND THIS POINT AT YOUR OWN RISK
 
-###Annotate genes for .csv with genes and their corresponding modules
-# Plot shows that genes which are highly significantly associated with a trait (GS) 
-# are often also the most important (central) elements of modules associated with that trait. 
-
-
 ### Intramodular analysis: identifying genes with high GS and MM ###
 # Using the GS and MM measures, we can identify genes that have a high significance for the trait of interest
 # as well as high module membership in interesting modules. This must be done module-by-module and trait-by-trait. 
+# Plot shows that genes which are highly significantly associated with a trait (GS) 
+# are often also the most important (central) elements of modules associated with that trait. 
 
 dim(datExpr)   # should be samples x genes
     #[1] 17108    37
@@ -2146,6 +2143,22 @@ head(topHubGenes, 10)
 # Save all hub genes for pink module related to treatment(population x treatment interaction)
 write.csv(topHubGenes, "HubGenes_pink_treatment.csv", row.names = FALSE)
 
+#Gives you a list of genes that are highly correlated for reporting
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+head(hubGenes_filtered)
+#gene        MM        GS
+                       #gene        MM         GS
+#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578
+#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898
+#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307
+#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253
+#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462
+#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544
+
+write.csv(hubGenes_filtered, "HubGenes_filtered_pink_treatment.csv", row.names = FALSE)
+
+               
+               
 #########MODULE DARKGREEN (most significantly associated with salinity trait (trait corresponds to treatment in my dataset)
 
 # Choose module and trait
@@ -2203,7 +2216,21 @@ head(topHubGenes, 10)
 # Save all hub genes for pink module related to treatment(population x treatment interaction)
 write.csv(topHubGenes, "HubGenes_darkgreen_salinity.csv", row.names = FALSE)
 
+#gives you a list of genes that are highly correlated for reporting
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+head(hubGenes_filtered)
+                      #gene        MM        GS
+#654 gene:ENSFHEG00000019007 0.8733233 0.3445413
+#7   gene:ENSFHEG00000006701 0.8652118 0.4348735
+#80  gene:ENSFHEG00000020075 0.8603864 0.4111710
+#612 gene:ENSFHEG00000008645 0.8505435 0.4186400
+#143 gene:ENSFHEG00000002699 0.8378052 0.3084076
+#336 gene:ENSFHEG00000002411 0.8365725 0.4427553
 
+write.csv(hubGenes_filtered, "HubGenes_filtered_darkgreen_salinity.csv", row.names = FALSE)
+
+               
+               
 #########MODULE TAN (almost significantly associated with population trait)
 
 # Choose module and trait
@@ -2261,4 +2288,18 @@ head(topHubGenes, 10)
 # Save all hub genes for pink module related to population (origin of population variable)
 write.csv(topHubGenes, "HubGenes_tan_population.csv", row.names = FALSE)
 
+#Gives you a list of genes that are highly correlated for reporting
+hubGenes_filtered = subset(topHubGenes, abs(MM) > 0.8 & abs(GS) > 0.3)
+head(hubGenes_filtered)
+                      #gene        MM        GS
+#125 gene:ENSFHEG00000022652 0.8642861 0.3142653
+#270 gene:ENSFHEG00000018640 0.8475635 0.4422910
+#260 gene:ENSFHEG00000017160 0.8472918 0.3779972
+#30  gene:ENSFHEG00000009617 0.8260525 0.3716563
+#134 gene:ENSFHEG00000020568 0.8238148 0.4044722
+#347 gene:ENSFHEG00000013461 0.8215138 0.3553341
 
+write.csv(hubGenes_filtered, "HubGenes_filtered_tan_population.csv", row.names = FALSE)
+
+
+###Annotate genes for .csv with genes and their corresponding modules by merging filtered hubGenes .csv with gene annotation file (mine is Mummichog.gtf)
