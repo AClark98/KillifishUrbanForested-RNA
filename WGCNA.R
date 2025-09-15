@@ -2325,3 +2325,90 @@ write.csv(hubGenes_filtered, "HubGenes_filtered_tan_population.csv", row.names =
     ####as long as it is not 0. Gene signficance shows how biologically relevant it is.
 
 ###Annotate genes for .csv with genes and their corresponding modules by merging filtered hubGenes .csv with gene annotation file (mine is Mummichog.gtf)
+###Gene Annotation - Merging highly correlated hub genes (HubGenesFiltered) with gene annotation file from the Atlantic killifish - Mummichog
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("rtracklayer")
+
+library(rtracklayer)
+
+# Import GTF
+gtf = import("mummichog.gtf")
+# Convert to data frame
+gtf_df = as.data.frame(gtf)
+# Keep only gene entries
+gtf_genes = gtf_df[gtf_df$type == "gene", c("gene_id", "gene_name")]
+
+
+#######Merge hub genes from module pink
+
+
+#Read your hub gene table
+pinkhubGenes = read.csv("HubGenes_filtered_pink_treatment.csv")
+
+            #This code did not work because I had to remove the prefix "gene:" from the annotation file so that
+            #the tables would merge...see code right below on filtering out prefix and downstream analyses
+            #Merge annotation into hubGenes
+            #pinkhubGenes_annotated = merge(
+            #pinkhubGenes,
+            #gtf_genes,
+            #by.x = "gene",     # column name in your CSV
+            #by.y = "gene_id",  # column name in GTF
+            #all.x = TRUE       # keep all hub genes
+            #)
+
+
+pinkhubGenes$gene_clean = sub("^gene:", "", pinkhubGenes$gene)
+gtf_genes$gene_clean = sub("^gene:", "", gtf_genes$gene_id)
+
+pinkhubGenes_annotated = merge(
+  pinkhubGenes,
+  gtf_genes,
+  by = "gene_clean",
+  all.x = TRUE
+)
+
+write.csv(pinkhubGenes_annotated, "HubGenes_pink_treatment_annotated.csv", row.names = FALSE)
+
+
+#######Merge hub genes from module darkgreen
+
+
+#Read your hub gene table
+darkgreenhubGenes = read.csv("HubGenes_filtered_darkgreen_salinity.csv")
+
+
+darkgreenhubGenes$gene_clean = sub("^gene:", "", darkgreenhubGenes$gene)
+gtf_genes$gene_clean = sub("^gene:", "", gtf_genes$gene_id)
+
+darkgreenhubGenes_annotated = merge(
+  darkgreenhubGenes,
+  gtf_genes,
+  by = "gene_clean",
+  all.x = TRUE
+)
+
+write.csv(darkgreenhubGenes_annotated, "HubGenes_darkgreen_salinity_annotated.csv", row.names = FALSE)
+
+
+#######Merge hub genes from module tan
+
+
+#Read your hub gene table
+tanhubGenes = read.csv("HubGenes_filtered_tan_population.csv")
+
+
+tanhubGenes$gene_clean = sub("^gene:", "", tanhubGenes$gene)
+gtf_genes$gene_clean = sub("^gene:", "", gtf_genes$gene_id)
+
+tanhubGenes_annotated = merge(
+  tanhubGenes,
+  gtf_genes,
+  by = "gene_clean",
+  all.x = TRUE
+)
+
+write.csv(tanhubGenes_annotated, "HubGenes_tan_population_annotated.csv", row.names = FALSE)
+
