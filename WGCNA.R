@@ -2,7 +2,7 @@
 ######### Gulf Killifish - Fundulus grandis - Gill ########
 
 # Antrelle D. Clark - Auburn University Department of Biological Sciences - Fall 2025
-# Gratitude to Ally Swank for the WGCNA script
+# Gratitude to Ally Swank, MS and Katie Eaton, PhD for the WGCNA script
 # R-script version 4.4.1 (2024-06-14)
 
 setwd("~/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish")
