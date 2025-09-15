@@ -1088,9 +1088,6 @@ ggplot(
 
 
 
-
-
-
 ####PROCEED WITH GO ANALYSIS
 
 ###GO Analysis for salmon, red, darkred, darkgreen, blue, pink, white, and turquoise
@@ -1995,6 +1992,8 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
            smallest = 5,
            clusterCutHeight = 0.25)
 
+#^this generates the file you need with the GO terms
+
 #28 GO terms at 10% FDR
 
 quartz()
@@ -2015,8 +2014,6 @@ results=gomwuPlot(input,goAnnotations,goDivision,
 results[[1]]
 
 
-
-
 ###NOTE: compile all GO terms for a certain module into an excel sheet
 ###NOTE: you will have to reformat the table because the contents will be bunched together
 ###NOTE: once that is done, you will need to look at the padj and look for signficantly
@@ -2026,3 +2023,242 @@ results[[1]]
 ####NOTE: it can say 14 GO terms passed 10% FDR but when you put them all in excel, you get 8.
 #########This is normal. It removes redundancy during filtering so you can report how many
 #########passed the 10% FDR but this many were unique to reduce redundancy.
+
+################################################################################PROCEED BEYOND THIS POINT AT YOUR OWN RISK
+
+###Annotate genes for .csv with genes and their corresponding modules
+# Plot shows that genes which are highly significantly associated with a trait (GS) 
+# are often also the most important (central) elements of modules associated with that trait. 
+
+
+### Intramodular analysis: identifying genes with high GS and MM ###
+# Using the GS and MM measures, we can identify genes that have a high significance for the trait of interest
+# as well as high module membership in interesting modules. This must be done module-by-module and trait-by-trait. 
+
+dim(datExpr)   # should be samples x genes
+    #[1] 17108    37
+dim(MEs)       # should be samples x modules
+    #[1] 37 24
+
+  ####17108 genes x 37 samples
+  ####37 samples x 24 modules
+          #this is a mismatch because datExpr has genes in rows and samples in columns, but WGCNA functions expect samples to be in rows
+          #and genes in to be in columns. We need to transpose datExpr before calculating correlation:
+
+
+#Transpose expression data: make it samples x genes
+datExpr_t = t(as.matrix(datExpr))
+dim(datExpr_t)
+    #[1]    37 17108
+    #now this reads 37 samples as rows and genes in columns. Proceed with kME calculation
+
+#Calculate module membership (kME)
+geneModuleMembership = as.data.frame(cor(datExpr_t, MEs, use = "p"))
+
+#Get p-values for the correlations
+nSamples = nrow(datExpr_t)  # should be 37
+    #37L shows in the working environment
+MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
+
+#Calculate gene significance (GS) for all traits
+# traitData: data frame with samples in rows, columns = traits
+# Check rownames of expression and trait data (these must match or you will get error)
+head(rownames(datExpr_t))
+    #[1] "L1C1" "L1C2" "L1C3" "L1C4" "L1C5" "L2U1"
+head(rownames(traitData))
+    #[1] "1" "2" "3" "4" "5" "6"
+#Assuming your data is in order (mine is), you can just make the traitData = to datExpr_t
+rownames(traitData) = rownames(datExpr_t)
+head(rownames(datExpr_t))
+    #[1] "L1C1" "L1C2" "L1C3" "L1C4" "L1C5" "L2U1"
+head(rownames(traitData))
+    #[1] "L1C1" "L1C2" "L1C3" "L1C4" "L1C5" "L2U1"
+
+#this is good
+      
+      #this will work if all of your columns are numeric; however, it considers my sample column so follow code underneath
+      #geneSignificance = as.data.frame(cor(datExpr_t, traitData, use = "p"))
+      #GS_pvalue = as.data.frame(corPvalueStudent(as.matrix(geneSignificance), nSamples))
+
+      ###error/warning here again because all columns are not numeric. It is considering my sample_ID column
+      ###fix:
+        # Exclude sample_ID column
+        traitData_numeric = traitData[, c("population", "treatment", "salinity")]
+
+        # Now calculate gene significance (GS)
+        geneSignificance = as.data.frame(cor(datExpr_t, traitData_numeric, use = "p"))
+
+               
+#########MODULE PINK (significantly associated with treatment variable in my dataset which is the population x treatment interaction)
+        
+# Choose module and trait
+module = "pink"
+trait = "treatment" #this is the trait that corresponds to population x treatment interaction in my dataset
+
+#Find the ME column for this module
+column = match(paste0("ME", module), colnames(MEs))
+
+#Get genes that belong to this module
+moduleGenes = moduleColors == module
+
+# Build a table for genes in this module
+intramodular = data.frame(
+  gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
+  MM   = geneModuleMembership[moduleGenes, column],   # module membership
+  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+)
+
+
+# Plot MM vs GS
+sizeGrWindow(7,7)
+par(mfrow = c(1,1))
+verboseScatterplot(
+  abs(geneModuleMembership[moduleGenes, column]),
+  abs(geneControlSignificance[moduleGenes, 1]),
+  xlab = paste("Module membership in", module, "module"),
+  ylab = paste("Gene significance for", trait),
+  main = paste("Module membership vs. gene significance\n"),
+  cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2,
+  col = module
+)
+
+####extract top hub genes for the MEpink module
+
+
+# Rank by high MM and GS
+topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), ]
+
+# Top 10 hub genes
+head(topHubGenes, 10)
+                       #gene        MM         GS
+#371 gene:ENSFHEG00000020417 0.9085793 -0.3777578
+#172 gene:ENSFHEG00000023379 0.8771235 -0.3723898
+#163 gene:ENSFHEG00000002020 0.8662670 -0.3836307
+#321 gene:ENSFHEG00000001783 0.8612490 -0.3950253
+#352 gene:ENSFHEG00000001105 0.8399881 -0.4039462
+#146 gene:ENSFHEG00000011828 0.8385647 -0.3224544
+#468 gene:ENSFHEG00000020278 0.8290693 -0.2995729
+#528 gene:ENSFHEG00000017282 0.8256888 -0.5589604
+#548 gene:ENSFHEG00000008858 0.8250066 -0.3491964
+#203 gene:ENSFHEG00000013010 0.8221956 -0.2603709
+
+
+# Save all hub genes for pink module related to treatment(population x treatment interaction)
+write.csv(topHubGenes, "HubGenes_pink_treatment.csv", row.names = FALSE)
+
+#########MODULE DARKGREEN (most significantly associated with salinity trait (trait corresponds to treatment in my dataset)
+
+# Choose module and trait
+module = "darkgreen"
+trait = "salinity" #this is the trait that corresponds to the type of treatment in my dataset
+
+#Find the ME column for this module
+column = match(paste0("ME", module), colnames(MEs))
+
+#Get genes that belong to this module
+moduleGenes = moduleColors == module
+
+# Build a table for genes in this module
+intramodular = data.frame(
+  gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
+  MM   = geneModuleMembership[moduleGenes, column],   # module membership
+  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+)
+
+
+# Plot MM vs GS
+sizeGrWindow(7,7)
+par(mfrow = c(1,1))
+verboseScatterplot(
+  abs(geneModuleMembership[moduleGenes, column]),
+  abs(geneControlSignificance[moduleGenes, 1]),
+  xlab = paste("Module membership in", module, "module"),
+  ylab = paste("Gene significance for", trait),
+  main = paste("Module membership vs. gene significance\n"),
+  cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2,
+  col = module
+)
+
+####extract top hub genes for the MEdarkgreen module
+
+
+# Rank by high MM and GS
+topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), ]
+
+# Top 10 hub genes
+head(topHubGenes, 10)
+                      #gene        MM         GS
+#654 gene:ENSFHEG00000019007 0.8733233 0.3445413
+#7   gene:ENSFHEG00000006701 0.8652118 0.4348735
+#80  gene:ENSFHEG00000020075 0.8603864 0.4111710
+#612 gene:ENSFHEG00000008645 0.8505435 0.4186400
+#143 gene:ENSFHEG00000002699 0.8378052 0.3084076
+#336 gene:ENSFHEG00000002411 0.8365725 0.4427553
+#505 gene:ENSFHEG00000005692 0.8324995 0.2553721
+#242 gene:ENSFHEG00000013401 0.8309436 0.3223702
+#497 gene:ENSFHEG00000014664 0.8299732 0.4173371
+#726 gene:ENSFHEG00000011919 0.8272840 0.3585879
+
+
+# Save all hub genes for pink module related to treatment(population x treatment interaction)
+write.csv(topHubGenes, "HubGenes_darkgreen_salinity.csv", row.names = FALSE)
+
+
+#########MODULE TAN (almost significantly associated with population trait)
+
+# Choose module and trait
+module = "tan"
+trait = "population" #this is the trait that corresponds to origin of population
+
+#Find the ME column for this module
+column = match(paste0("ME", module), colnames(MEs))
+
+#Get genes that belong to this module
+moduleGenes = moduleColors == module
+
+# Build a table for genes in this module
+intramodular = data.frame(
+  gene = colnames(datExpr_t)[moduleGenes],     # gene IDs
+  MM   = geneModuleMembership[moduleGenes, column],   # module membership
+  GS   = geneSignificance[moduleGenes, trait]         # gene significance
+)
+
+
+# Plot MM vs GS
+sizeGrWindow(7,7)
+par(mfrow = c(1,1))
+verboseScatterplot(
+  abs(geneModuleMembership[moduleGenes, column]),
+  abs(geneControlSignificance[moduleGenes, 1]),
+  xlab = paste("Module membership in", module, "module"),
+  ylab = paste("Gene significance for", trait),
+  main = paste("Module membership vs. gene significance\n"),
+  cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2,
+  col = module
+)
+
+####extract top hub genes for the MEtan module
+
+
+# Rank by high MM and GS
+topHubGenes = intramodular[order(-abs(intramodular$MM), -abs(intramodular$GS)), ]
+
+# Top 10 hub genes
+head(topHubGenes, 10)
+                      #gene        MM         GS
+#151 gene:ENSFHEG00000006981 0.9121473 0.2378776
+#18  gene:ENSFHEG00000023306 0.8884549 0.1189022
+#121 gene:ENSFHEG00000021993 0.8707211 0.2854422
+#125 gene:ENSFHEG00000022652 0.8642861 0.3142653
+#299 gene:ENSFHEG00000014685 0.8568540 0.2641715
+#155 gene:ENSFHEG00000021672 0.8498176 0.2599087
+#270 gene:ENSFHEG00000018640 0.8475635 0.4422910
+#260 gene:ENSFHEG00000017160 0.8472918 0.3779972
+#220 gene:ENSFHEG00000007329 0.8329899 0.1055921
+#30  gene:ENSFHEG00000009617 0.8260525 0.3716563
+
+
+# Save all hub genes for pink module related to population (origin of population variable)
+write.csv(topHubGenes, "HubGenes_tan_population.csv", row.names = FALSE)
+
+
