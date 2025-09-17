@@ -2014,6 +2014,119 @@ results=gomwuPlot(input,goAnnotations,goDivision,
 results[[1]]
 
 
+#######################MODULE TAN (almost significantly correlated with "origin of population" trait)
+
+color = GMM[, c("gene_ID", "tan")]
+write.csv(color, file = "gill_tan.csv", quote = F, row.names = F)
+
+
+
+######TAN - MF
+# Look for GO categories significantly over-represented among module members, using Fisher's Exact Test
+input = "gill_tan.csv"
+goAnnotations = "Mummichog_aggregated_GO_terms_filtered.txt"
+goDatabase = "go.obo"
+goDivision = "MF"
+source("gomwu.functions.R")
+
+gomwuStats(input, goDatabase, goAnnotations, goDivision, 
+           perlPath = "perl", 
+           largest = 0.1, 
+           smallest = 5,
+           clusterCutHeight = 0.25)
+
+#6 GO terms at 10% FDR
+
+quartz()
+results=gomwuPlot(input,goAnnotations,goDivision,
+                  absValue=-log(0.05,10),  # genes with the measure value exceeding this will be counted as "good genes". This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
+                  #absValue=0.001, # un-remark this if you are using log2-fold changes
+                  level1=0.1, # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
+                  level2=0.05, # FDR cutoff to print in regular (not italic) font.
+                  level3=0.01, # FDR cutoff to print in large bold font.
+                  txtsize=1.2,    # decrease to fit more on one page, or increase (after rescaling the plot so the tree fits the text) for better "word cloud" effect
+                  treeHeight=0.5, # height of the hierarchical clustering tree
+                  #	colors=c("dodgerblue2","firebrick1","skyblue2","lightcoral") # these are default colors, un-remar and change if needed
+)
+# manually rescale the plot so the tree matches the text 
+# if there are too many categories displayed, try make it more stringent with level1=0.05,level2=0.01,level3=0.001.  
+
+# text representation of results, with actual adjusted p-values
+results[[1]]
+
+
+
+######TAN - BP
+# Look for GO categories significantly over-represented among module members, using Fisher's Exact Test
+input = "gill_tan.csv"
+goAnnotations = "Mummichog_aggregated_GO_terms_filtered.txt"
+goDatabase = "go.obo"
+goDivision = "BP"
+source("gomwu.functions.R")
+
+gomwuStats(input, goDatabase, goAnnotations, goDivision, 
+           perlPath = "perl", 
+           largest = 0.1, 
+           smallest = 5,
+           clusterCutHeight = 0.25)
+
+#4 GO terms at 10% FDR
+
+quartz()
+results=gomwuPlot(input,goAnnotations,goDivision,
+                  absValue=-log(0.05,10),  # genes with the measure value exceeding this will be counted as "good genes". This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
+                  #absValue=0.001, # un-remark this if you are using log2-fold changes
+                  level1=0.1, # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
+                  level2=0.05, # FDR cutoff to print in regular (not italic) font.
+                  level3=0.01, # FDR cutoff to print in large bold font.
+                  txtsize=1.2,    # decrease to fit more on one page, or increase (after rescaling the plot so the tree fits the text) for better "word cloud" effect
+                  treeHeight=0.5, # height of the hierarchical clustering tree
+                  #	colors=c("dodgerblue2","firebrick1","skyblue2","lightcoral") # these are default colors, un-remar and change if needed
+)
+# manually rescale the plot so the tree matches the text 
+# if there are too many categories displayed, try make it more stringent with level1=0.05,level2=0.01,level3=0.001.  
+
+# text representation of results, with actual adjusted p-values
+results[[1]]
+
+
+
+######TAN - CC
+# Look for GO categories significantly over-represented among module members, using Fisher's Exact Test
+input = "gill_tan.csv"
+goAnnotations = "Mummichog_aggregated_GO_terms_filtered.txt"
+goDatabase = "go.obo"
+goDivision = "CC"
+source("gomwu.functions.R")
+
+gomwuStats(input, goDatabase, goAnnotations, goDivision, 
+           perlPath = "perl", 
+           largest = 0.1, 
+           smallest = 5,
+           clusterCutHeight = 0.25)
+
+
+#0 GO terms at 10% FDR
+
+quartz()
+results=gomwuPlot(input,goAnnotations,goDivision,
+                  absValue=-log(0.05,10),  # genes with the measure value exceeding this will be counted as "good genes". This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
+                  #absValue=0.001, # un-remark this if you are using log2-fold changes
+                  level1=0.1, # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
+                  level2=0.05, # FDR cutoff to print in regular (not italic) font.
+                  level3=0.01, # FDR cutoff to print in large bold font.
+                  txtsize=1.2,    # decrease to fit more on one page, or increase (after rescaling the plot so the tree fits the text) for better "word cloud" effect
+                  treeHeight=0.5, # height of the hierarchical clustering tree
+                  #	colors=c("dodgerblue2","firebrick1","skyblue2","lightcoral") # these are default colors, un-remar and change if needed
+)
+# manually rescale the plot so the tree matches the text 
+# if there are too many categories displayed, try make it more stringent with level1=0.05,level2=0.01,level3=0.001.  
+
+# text representation of results, with actual adjusted p-values
+results[[1]]
+
+
+               
 ###NOTE: compile all GO terms for a certain module into an excel sheet
 ###NOTE: you will have to reformat the table because the contents will be bunched together
 ###NOTE: once that is done, you will need to look at the padj and look for signficantly
