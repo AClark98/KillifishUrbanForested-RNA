@@ -2525,3 +2525,202 @@ tanhubGenes_annotated = merge(
 
 write.csv(tanhubGenes_annotated, "HubGenes_tan_population_annotated.csv", row.names = FALSE)
 
+
+
+##################Creating boxplots for significant modules in the pop x treatment interaction (treatment trait), but grouping them based on control (0) or stress (1)
+library(ggplot2)
+# Example: traitData$treatment is 0 = Control, 1 = Stress
+
+
+
+#####MODULE SALMON
+
+#Salmon module 
+module = "salmon"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+
+
+#####MODULE RED
+
+#Red module 
+module = "red"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+
+
+#####MODULE BLUE
+
+#Blue module 
+module = "blue"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+
+
+#####MODULE PINK
+
+#Pink module 
+module = "pink"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+
+
+#####MODULE WHITE
+
+#Salmon module 
+module = "white"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+
+
+#####MODULE TURQUOISE
+
+#Salmon module 
+module = "turquoise"
+MEname = paste0("ME", module)
+
+# Make a dataframe with ME values + treatment
+plotData <- data.frame(
+  Treatment = as.factor(traitData$treatment),
+  Eigengene = MEs[, MEname]
+)
+
+#Plot the boxplot
+
+ggplot(plotData, aes(x = Treatment, y = Eigengene, fill = Treatment)) +
+  geom_boxplot(alpha = 1, outlier.shape = NA, color = "black") +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.8) +
+  labs(
+    title = paste("Module eigengene expression:", module),
+    x = "Treatment",
+    y = "Module Eigengene Value"
+  ) +
+  scale_fill_manual(values = c("0" = "#0000FF", "1" = "#FF0000")) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),  # removes major horizontal gridlines
+    panel.grid.minor.y = element_blank(),  # removes minor horizontal gridlines
+    panel.grid.major.x = element_blank(),  # optional: remove vertical lines
+    panel.grid.minor.x = element_blank()   # optional: remove vertical lines
+  )
+              
