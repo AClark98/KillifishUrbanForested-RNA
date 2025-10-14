@@ -412,7 +412,7 @@ moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples);
 Colors=sub("ME","",names(MEs))
 
 
-## Will display correlations and their p-values
+## Will display their p-values
 #textMatrix =  paste(signif(moduleTraitCor, 2), "\n(",signif(moduleTraitPvalue, 1), ")", sep = "");
 textMatrix =  paste(signif(moduleTraitPvalue, 1))
 dim(textMatrix) = dim(moduleTraitCor)
@@ -434,11 +434,37 @@ labeledHeatmap(Matrix = moduleTraitCor,
                main = paste("Module-trait relationships"))
 dev.off()
 
-
 ####for this heatmap, box color = correlation and number in box is P-value.
 ###You can edit the text to include both if you want where the correlation number will be shown
 ###followed by a number in parentheses which would be the P-value. Here, we only plotted the
 ###P-value inside the boxes with the color of the boxes being associated with correlation
+
+               
+###AND/OR###
+
+## Will display their correlation values
+textMatrix =  paste(signif(moduleTraitCor, 2))
+#textMatrix =  paste(signif(moduleTraitPvalue, 1))
+dim(textMatrix) = dim(moduleTraitCor)
+par(mfrow = c(1,1))
+par(mar=c(1,1,1,1))
+# Display the correlation values within a heatmap plot
+pdf(file="trait-cor-heatmap-included.pdf", width=7, height=7)
+labeledHeatmap(Matrix = moduleTraitCor,
+               xLabels = names(datTraits),
+               xLabelsAngle = 0,
+               yLabels = names(MEs),
+               ySymbols = names(MEs),
+               colorLabels = FALSE,
+               colors = blueWhiteRed(50),
+               textMatrix = textMatrix,
+               setStdMargins = TRUE,
+               cex.text = 0.75,
+               zlim = c(-1,1),
+               main = paste("Module-trait relationships"))
+dev.off()
+               
+
 
 MEDiss= 1-cor(MEs)
 METree= flashClust(as.dist(MEDiss), method= "average")
