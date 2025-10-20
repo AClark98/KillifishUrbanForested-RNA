@@ -305,8 +305,75 @@ scp -r /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcallin
   #Weir and Cockerham weighted Fst estimate: 0.02074 #adjusted for sample size and allele frequency
   
 
- 
- 
+##calculate Ho (heterozygosity observed) and He (heterozygosity expected) for each population (R studio)
+
+	library(vcfR)
+	vcf <- read.vcfR("/Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/killifish-pruned-final-74k.vcf")
+
+	meta <- read.table("/Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/SNPcalling-Chapter1/antrelle-snps/snp-pops.txt", header = FALSE, sep = "\t",
+                   col.names = c("sample_ID", "population"))
+
+	head(meta)
+        #sample_ID population
+        #1 L1C1       Long
+        #2 L1C2       Long
+        #3 L1C3       Long
+        #4 L1C4       Long
+        #5 L1C5       Long
+        #6 L2U1       Long
+
+	# Convert to genlight or genind object (adegenet)
+	library(adegenet)
+	gen <- vcfR2genlight(vcf)
+
+	# Check the individual names in your gen object
+	indNames(gen)[1:5]
+    	#"L1C1_L1C1" "L1C2_L1C2" "L1C3_L1C3" "L1C4_L1C4" "L1C5_L1C5"
+    	#names are mismatched so changing sample names to match the rest of the data
+	indNames(gen) <- sapply(strsplit(indNames(gen), "_"), `[`, 1)
+	indNames(gen)[1:5]
+    	#"L1C1" "L1C2" "L1C3" "L1C4" "L1C5"
+    	#ok
+
+	meta <- meta[match(indNames(gen), meta$sample_ID), ]
+
+	#Assign population info
+	pop(gen) <- as.factor(meta$population)
+	table(pop(gen))
+    	#Long Weakley 
+      	#20     17
+
+	library(adegenet)
+
+	# Split genlight by population
+	pop_list <- seppop(gen)  # returns list of genlight objects
+
+	# Compute Ho and He per population
+	Ho_list <- lapply(pop_list, function(g) {
+  	geno <- tab(g, NA.method = "mean")  # converts genlight to numeric matrix (0,1,2)
+  	rowMeans(geno) %>% mean()           # mean observed heterozygosity across loci
+	})
+
+	He_list <- lapply(pop_list, function(g) {
+  	geno <- tab(g, NA.method = "mean")  # numeric matrix
+  	p <- colMeans(geno) / 2             # allele frequencies assuming diploid
+  	mean(2 * p * (1 - p))               # expected heterozygosity per population
+	})
+
+	# Combine into a data frame
+	het_summary <- data.frame(
+  	Population = names(Ho_list),
+  	Ho = unlist(Ho_list),
+  	He = unlist(He_list)
+	)
+
+	print(het_summary)
+
+        	#Population        Ho        He
+	#Long          Long 0.3860840 0.2563005
+	#Weakley    Weakley 0.3850943 0.2535327
+
+
 ############Use pruned SNP file for Admixture/PCA/clustering
  
 #######Admixture
