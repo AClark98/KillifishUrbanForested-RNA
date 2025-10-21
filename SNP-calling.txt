@@ -13,7 +13,7 @@
   
   
 # going to run the code keeping the C, but removing the Q 30 and making the -q 30 to only keep high confident SNPS: 
-  # script for bcftools - calling SNPS (saved as SNPcalling-min30.sh)
+  # script for bcftools - calling SNPS; here we are generating variant likelihoods (saved as SNPcalling-min30.sh)
 	#!/bin/bash
 	#
 	# load the Bcftools environment
