@@ -187,20 +187,16 @@ length(WB_genes_frontloaded_in_LB)
 
 
 
+#extract list of LB backloaded genes (induced when exposed to "tide+runoff" treatment)
+write.csv(backloaded_for_LB, file = "LB_backloaded.csv")
+
+#extract list of WB backloaded genes (induced when exposed to "tide" treatment)
+write.csv(backloaded_for_WB, file = "WB_backloaded.csv")
 
 
 
 
 
-
-
-
-
-
-
-
-#extract list of backloaded genes in LB pop
-write.csv(backloaded_LB_in_WB, file = "backloaded_LB_in_WB.csv")
 
 
 
