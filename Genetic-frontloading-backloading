@@ -55,6 +55,15 @@ backloaded_for_WB <- rownames(backloaded_WB)
 
 #View backloaded genes for WB
 backloaded_for_WB
+    #[1] "gene:ENSFHEG00000019924" "gene:ENSFHEG00000017456" "gene:ENSFHEG00000009196"
+    #[4] "gene:ENSFHEG00000009502" "gene:ENSFHEG00000003544" "gene:ENSFHEG00000015691"
+    #[7] "gene:ENSFHEG00000009231" "gene:ENSFHEG00000003293" "gene:ENSFHEG00000012294"
+    #[10] "gene:ENSFHEG00000012277" "gene:ENSFHEG00000009823" "gene:ENSFHEG00000007932"
+    #[13] "gene:ENSFHEG00000000626" "gene:ENSFHEG00000013510" "gene:ENSFHEG00000009514"
+    #[16] "gene:ENSFHEG00000023008"
+
+  #I now have the gene lists for LB (backloaded_for_LB) and WB (backloaded_for_WB) to identify candidate genes for frontloading by
+  #testing for high expression of those genes in the opposite population
 
 
 # Run variance stabilizing transformation
@@ -82,6 +91,99 @@ WB_frontloaded <- rowMeans(vst_counts[backloaded_for_LB, WB_control_samples, dro
 # Expression of WB stress induced genes in LB home: LB frontloading
 LB_frontloaded <- rowMeans(vst_counts[backloaded_for_WB, LB_control_samples, drop=FALSE])
 
+summary(WB_frontloaded)
+  #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  #7.167   7.433   7.698   8.484   9.142  10.587 
+
+summary(LB_frontloaded)
+  #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  #7.417   7.672   8.195   8.625   9.680  10.673
+
+
+# Mean frontloaded expression relative to own home
+LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])
+WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
+
+frontload_ratio_WB <- mean(WB_frontloaded) / mean(LB_home_expr)
+frontload_ratio_LB <- mean(LB_frontloaded) / mean(WB_home_expr)
+
+frontload_ratio_WB
+  #[1] 1.059625
+frontload_ratio_LB
+  #[1] 1.059798
+
+########Visualizing frontloading/backloading on a boxplot
+
+# Own population home expression (backloading reference)
+LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])
+WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
+
+# Cross-population frontloading
+LB_frontloaded_in_WB <- rowMeans(vst_counts[backloaded_for_LB, WB_control_samples, drop=FALSE])
+WB_frontloaded_in_LB <- rowMeans(vst_counts[backloaded_for_WB, LB_control_samples, drop=FALSE])
+
+# Combine for boxplot
+expr_matrix <- list(
+  "LB home" = LB_home_expr,                                                #LB home expression
+  "LB in WB" = LB_frontloaded_in_WB,                                       #WB frontloaded
+  "WB home" = WB_home_expr,                                                #WB home expression
+  "WB in LB" = WB_frontloaded_in_LB                                        #LB frontloaded
+)
+
+# Boxplot
+boxplot(
+  expr_matrix,
+  col = c("skyblue","lightblue","salmon","pink"),
+  ylab = "VST expression",
+  main = "Frontloading and Backloading Comparison",                        
+  outline = FALSE
+)
+
+# Add median lines in a different color (optional)
+abline(h = median(LB_home_expr), col = "blue", lty = 2)
+abline(h = median(WB_home_expr), col = "red", lty = 2)
+
+
+##################Testing for candidate frontloaded genes
+
+            ####This part is done before the boxplot is created but here just to show what the frontloaded gene expression is being compared to
+            ####Own home expression
+            ####LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])
+            ####WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
+
+
+# Define frontloaded genes as having expression ≥ 1× own home (baseline expression)
+LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1]
+WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 1]
+
+length(LB_genes_frontloaded_in_WB)
+    #3
+length(WB_genes_frontloaded_in_LB)
+    #14
+
+    ### genes are present at the baseline expression level
+
+# Define frontloaded genes as having expression ≥ 1.2× own home (20% higher than home expression)
+LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1.2]
+WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 1.2]
+
+length(LB_genes_frontloaded_in_WB)
+    #0
+length(WB_genes_frontloaded_in_LB)
+    #1
+
+    ### minimal anticipatory expression
+
+# Define frontloaded genes as having expression ≥ 2× own home (a higher baseline expression)
+LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 2]
+WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 2]
+
+length(LB_genes_frontloaded_in_WB)
+    #0
+length(WB_genes_frontloaded_in_LB)
+    #0
+
+    ### strong frontloading is absent
 
 
 
@@ -96,86 +198,6 @@ LB_frontloaded <- rowMeans(vst_counts[backloaded_for_WB, LB_control_samples, dro
 
 
 
-
-
-
-
-
-
-
-# Long Bayou = long_bayou_F, home "control" treatment = tide
-LB_control_samples <- colnames(GFKdds)[
-  GFKdds$origin == "long_bayou_F" & GFKdds$treatment == "tide"
-]
-
-# Mean expression of experimental-induced genes from Weakley Bayou in Long Bayou home condition
-mean_expr_in_LB <- rowMeans(vst_counts[turned_on_genes_LB, LB_control_samples, drop=FALSE])
-
-# View top front-loaded candidates
-backloaded_WB_in_LB <- sort(mean_expr_in_LB, decreasing = TRUE)
-head(backloaded_WB_in_LB, 10) #shows top 10 genes
-
-    #gene:ENSFHEG00000006314 gene:ENSFHEG00000008149 gene:ENSFHEG00000016601 
-                   #9.839421                7.160313                7.020118 
-
-backloaded_WB_in_LB #to see all genes
-    #3 genes significantly induced when WB pop is exposed to LB normal conditions (tide treatment)
-
-#extract list of backloaded genes in LB pop
-write.csv(backloaded_WB_in_LB, file = "backloaded_WB_in_LB.csv")
-
-
-##################################################
-
-
-##### Weakley Bayou population
-WB_dds <- GFKdds[, GFKdds$origin == "weakley_bayou_U"]
-design(WB_dds) <- ~ treatment
-WB_dds <- DESeq(WB_dds)
-WB_treat_res <- results(WB_dds, contrast = c("treatment", "tide", "tide_runoff"))  # foreign vs home
-
-
-# Get significantly upregulated genes (treatment-induced)
-turned_on_WB <- subset(WB_treat_res, padj < 0.05 & log2FoldChange > 1)
-turned_on_genes_WB <- rownames(turned_on_WB)
-
-
-# Weakley Bayou = weakley_bayou_U, home treatment = tide_runoff
-WB_control_samples <- colnames(GFKdds)[
-  GFKdds$origin == "weakley_bayou_U" & GFKdds$treatment == "tide_runoff"
-]
-
-# Mean expression of experimental-induced genes from Long Bayou in Weakley Bayou home condition
-mean_expr_in_WB <- rowMeans(vst_counts[turned_on_genes_WB, WB_control_samples, drop=FALSE])
-
-# View top back-loaded candidates
-backloaded_LB_in_WB <- sort(mean_expr_in_WB, decreasing = TRUE)
-        #head(backloaded_LB_in_WB, 10) #to see top 10
-
-
-        #gene:ENSFHEG00000021576 gene:ENSFHEG00000010562 gene:ENSFHEG00000009304 
-                      #11.446843               11.170573               10.020650 
-        #gene:ENSFHEG00000003810 gene:ENSFHEG00000020910 gene:ENSFHEG00000006476 
-                       #9.179378                8.772974                8.692392 
-        #gene:ENSFHEG00000016212 gene:ENSFHEG00000023005 gene:ENSFHEG00000018965 
-                       #8.535428                8.383383                8.190001 
-        #gene:ENSFHEG00000001392 
-                       #7.909710 
-
-backloaded_LB_in_WB
-
-        #gene:ENSFHEG00000021576 gene:ENSFHEG00000010562 gene:ENSFHEG00000009304 
-                      #11.446843               11.170573               10.020650 
-        #gene:ENSFHEG00000003810 gene:ENSFHEG00000020910 gene:ENSFHEG00000006476 
-                       #9.179378                8.772974                8.692392 
-        #gene:ENSFHEG00000016212 gene:ENSFHEG00000023005 gene:ENSFHEG00000018965 
-                       #8.535428                8.383383                8.190001 
-        #gene:ENSFHEG00000001392 gene:ENSFHEG00000015240 gene:ENSFHEG00000014562 
-                       #7.909710                7.812889                7.758287 
-        #gene:ENSFHEG00000011984 
-                       #7.635522
-
-#13 genes significantly induced when LB pop is exposed to WB normal conditions (tide_runoff treatment) 
 
 #extract list of backloaded genes in LB pop
 write.csv(backloaded_LB_in_WB, file = "backloaded_LB_in_WB.csv")
