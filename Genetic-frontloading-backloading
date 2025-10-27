@@ -195,11 +195,6 @@ write.csv(backloaded_for_WB, file = "WB_backloaded.csv")
 
 
 
-
-
-
-
-
 ##################################################
 
 ###Gene Annotation
@@ -235,6 +230,55 @@ gene_info <- gene_info[!duplicated(gene_info$gene_id), ]
 
 # Save to CSV if you want
 write.csv(gene_info, "gene_id_to_gene_name_mapping.csv", row.names = FALSE)
+
+
+### Long Bayou (induced when exposed to tide+runoff)
+gene_ids_backloaded_LB <- sub("^gene:", "", names(backloaded_for_LB))
+backloaded_for_LB <- data.frame(
+  gene_id = gene_ids_backloaded_LB,
+  expression = as.numeric(backloaded_for_LB)
+)
+annotated_LB_backloaded <- merge(backloaded_for_LB, gene_info, by = "gene_id", all.x = TRUE)
+write.csv(annotated_LB_backloaded, "annotated_backloaded_LB.csv", row.names = FALSE)
+
+
+### Weakley Bayou (induced in LB when exposed to WB control "tide_runoff")
+gene_ids_LB_in_WB <- sub("^gene:", "", names(backloaded_LB_in_WB))
+backloaded_df_LB_in_WB <- data.frame(
+  gene_id = gene_ids_LB_in_WB,
+  expression = as.numeric(backloaded_LB_in_WB)
+)
+annotated_LB_in_WB <- merge(backloaded_df_LB_in_WB, gene_info, by = "gene_id", all.x = TRUE)
+write.csv(annotated_LB_in_WB, "annotated_backloaded_LB_in_WB.csv", row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Merge the mapping table with your backloaded gene data
 
