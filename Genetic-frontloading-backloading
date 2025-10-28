@@ -296,6 +296,37 @@ annotated_WB
 #15 ENSFHEG00000019924      <NA>
 #16 ENSFHEG00000023008      <NA>
 
+#####Heatmaps
+
+library(pheatmap)
+
+###Heatmap for LB backloaded genes across all samples
+    genes_to_plot <- backloaded_for_LB  
+
+    #Subset VST counts
+    expr_matrix <- vst_counts[genes_to_plot, , drop=FALSE]
+
+pheatmap(expr_matrix,
+         scale = "row",           # optional: z-score each gene
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
+         main = "LB Backloaded Genes Expression")
+
+###Heatmap for WB backloaded genes across all samples
+    genes_to_plot <- backloaded_for_WB  
+    expr_matrix <- vst_counts[genes_to_plot, , drop=FALSE]
+
+pheatmap(expr_matrix,
+         scale = "row",           # optional: z-score each gene
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
+         main = "LB Backloaded Genes Expression")
 
 
 
