@@ -63,7 +63,7 @@ backloaded_for_WB
     #[16] "gene:ENSFHEG00000023008"
 
   #I now have the gene lists for LB (backloaded_for_LB) and WB (backloaded_for_WB) to identify candidate genes for frontloading by
-  #testing for high expression of those genes in the opposite population
+  #testing for equal or higerh expression of those genes in the opposite population
 
 
 # Run variance stabilizing transformation
@@ -111,14 +111,15 @@ frontload_ratio_WB
   #[1] 1.059625
 frontload_ratio_LB
   #[1] 1.059798
+                        #this means that each pop has similar expression patterns; no strong frontloading
 
 ########Visualizing frontloading/backloading on a boxplot
 
-# Own population home expression (backloading reference)
+#Calculating own population home expression (backloading reference)
 LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])
 WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
 
-# Cross-population frontloading
+#Cross-population frontloading; calculating level of expression in opposite population
 LB_frontloaded_in_WB <- rowMeans(vst_counts[backloaded_for_LB, WB_control_samples, drop=FALSE])
 WB_frontloaded_in_LB <- rowMeans(vst_counts[backloaded_for_WB, LB_control_samples, drop=FALSE])
 
@@ -161,7 +162,7 @@ length(LB_genes_frontloaded_in_WB) #WB frontloaded genes
 length(WB_genes_frontloaded_in_LB) #LB frontloaded genes
     #14
 
-    ### genes are present at the baseline expression level
+    ### genes are present at the baseline expression level; potentially frontloaded
 
 # Define frontloaded genes as having expression ≥ 1.2× own home (20% higher than home expression)
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1.2]
@@ -184,7 +185,6 @@ length(WB_genes_frontloaded_in_LB)
     #0
 
     ### strong frontloading is absent
-
 
 
 #extract list of LB backloaded genes (induced when exposed to "tide+runoff" treatment)
@@ -241,6 +241,12 @@ backloaded_for_LB <- data.frame(
 annotated_LB_backloaded <- merge(backloaded_for_LB, gene_info, by = "gene_id", all.x = TRUE)
 write.csv(annotated_LB_backloaded, "annotated_backloaded_LB.csv", row.names = FALSE)
 
+head(annotated_LB_backloaded)
+             #gene_id gene_id.y
+  #1 ENSFHEG00000006314      <NA>
+  #2 ENSFHEG00000008149      <NA>
+  #3 ENSFHEG00000016601      <NA>
+
 
 ### Weakley Bayou (induced in LB when exposed to WB control "tide_runoff")
 gene_ids_LB_in_WB <- sub("^gene:", "", names(backloaded_for_WB))
@@ -249,9 +255,26 @@ backloaded_for_WB <- data.frame(
   expression = as.numeric(backloaded_for_WB)
 )
 annotated_LB_in_WB <- merge(backloaded_df_LB_in_WB, gene_info, by = "gene_id", all.x = TRUE)
-write.csv(annotated_LB_in_WB, "annotated_backloaded_WB.csv", row.names = FALSE)
+write.csv(annotated_WB_backloaded, "annotated_backloaded_WB.csv", row.names = FALSE)
 
 
+head(annotated_WB_backloaded)
+                #gene_id gene_id.y
+    #1  ENSFHEG00000000626      <NA>
+    #2  ENSFHEG00000003293      <NA>
+    #3  ENSFHEG00000003544      <NA>
+    #4  ENSFHEG00000007932      <NA>
+    #5  ENSFHEG00000009196      <NA>
+    #6  ENSFHEG00000009231      <NA>
+    #7  ENSFHEG00000009502      <NA>
+    #8  ENSFHEG00000009514      <NA>
+    #9  ENSFHEG00000009823      <NA>
+    #10 ENSFHEG00000012277      <NA>
+    #11 ENSFHEG00000012294      <NA>
+    #12 ENSFHEG00000013510      <NA>
+    #13 ENSFHEG00000015691      <NA>
+    #14 ENSFHEG00000017456      <NA>
+    #15 ENSFHEG00000019924      <NA>
+    #16 ENSFHEG00000023008      <NA>
 
-
-#########End of front-back loading analysis#########
+#########End of frontloading-backloading analysis#########
