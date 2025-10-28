@@ -2,7 +2,7 @@
 ##### Chapter 1 of dissertation - Gene expression analysis continued...-June 2025;R-studio v4.4.1 #####
 ##Genetic front loading test for a Reciprocal Transplant Experiment##
 
-#Many thanks to https://doi.org/10.3389/fmars.2023.1163552
+#Many thanks to https://doi.org/10.3389/fmars.2023.1163552 and https://doi.org/10.1111/mec.12390
 
 #####THIS TAKES PLACE IMMEDIATELY AFTER RUNNING DESEQ2 to get differentially expressed genes based on origin (origin + ~ treatment), treatment (~ origin + treatment), and origin+treatment (~1)
 setwd("~/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish")
