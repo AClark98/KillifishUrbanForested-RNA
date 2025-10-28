@@ -328,6 +328,42 @@ pheatmap(expr_matrix,
          color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
          main = "WB Backloaded Genes Expression (WT)")
 
+##########Frontloading gene candidates in 1x
+
+## Heatmap for LB backloaded genes across all samples
+genes_to_plot <- LB_genes_frontloaded_in_WB  
+
+#Subset VST counts
+expr_matrix <- vst_counts[genes_to_plot, , drop=FALSE]
+
+pheatmap(expr_matrix,
+         scale = "row",           # optional: z-score each gene
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
+         main = "WB frontloaded genes (WTR) 1x")
+
+
+## Heatmap for LB backloaded genes across all samples
+genes_to_plot <- WB_genes_frontloaded_in_LB  
+
+#Subset VST counts
+expr_matrix <- vst_counts[genes_to_plot, , drop=FALSE]
+
+pheatmap(expr_matrix,
+         scale = "row",           # optional: z-score each gene
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
+         main = "LB frontloaded genes (LT) 1x")
+
+
+##########Frontloading gene candidates in 2x
+
 
 
 #########End of frontloading-backloading analysis#########
