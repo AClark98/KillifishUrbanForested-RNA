@@ -162,7 +162,15 @@ length(LB_genes_frontloaded_in_WB) #WB frontloaded genes
 length(WB_genes_frontloaded_in_LB) #LB frontloaded genes
     #14
 
-    ### genes are present at the baseline expression level; potentially frontloaded
+     ### genes are present at the baseline expression level; potentially frontloaded
+
+WB_genes_frontloaded_in_LB    #listing genes that are potentially frontloaded since we got 14/16 from the backloaded genes list; seeing which are missing
+    #[1] "gene:ENSFHEG00000019924" "gene:ENSFHEG00000017456" "gene:ENSFHEG00000009196"
+    #[4] "gene:ENSFHEG00000009502" "gene:ENSFHEG00000003544" "gene:ENSFHEG00000015691"
+    #[7] "gene:ENSFHEG00000009231" "gene:ENSFHEG00000003293" "gene:ENSFHEG00000012294"
+    #[10] "gene:ENSFHEG00000012277" "gene:ENSFHEG00000007932" "gene:ENSFHEG00000000626"
+    #[13] "gene:ENSFHEG00000013510" "gene:ENSFHEG00000009514"
+   
 
 # Define frontloaded genes as having expression ≥ 1.2× own home (20% higher than home expression)
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1.2]
@@ -173,7 +181,7 @@ length(LB_genes_frontloaded_in_WB)
 length(WB_genes_frontloaded_in_LB)
     #1
 
-    ### minimal anticipatory expression
+    ### minimal anticipatory expression; most candidate genes for frontloading have equal or around equal expression
 
 # Define frontloaded genes as having expression ≥ 2× own home (a higher baseline expression)
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 2]
