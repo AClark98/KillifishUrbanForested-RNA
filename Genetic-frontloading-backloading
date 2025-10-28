@@ -199,82 +199,72 @@ write.csv(backloaded_for_WB, file = "WB_backloaded.csv")
 
 ###Gene Annotation
 
-#Transfer the .gtf and/or .gff file that corresponds to the reference genome (i.e., from EnsemblID or NCBI) (this step was already done so transferred from my linux terminal working directory)
-  #scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/fastqc/paired/Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish/
-      #after transfer, renamed Mummichog.gff3
-  #scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/fastqc/paired/Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish/
-      #after transfer, renamed Mummichog.gtf
+
+        ###If you need to grab the file from online; the code is here but this was done already so ### out
+            #Transfer the .gtf and/or .gff file that corresponds to the reference genome (i.e., from EnsemblID or NCBI) (this step was already done so transferred from my linux terminal working directory)
+                  #scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/fastqc/paired/Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gff3 /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish/
+                      #after transfer, renamed Mummichog.gff3
+                  #scp aubadc002@asax.asc.edu:/home/aubadc002/killifish/fastqc/paired/Fundulus_heteroclitus.Fundulus_heteroclitus-3.0.2.112.gtf /Users/adc0064/Library/CloudStorage/Box-Box/Bernal_lab/Antrelle/GulfKillifish/
+                     #after transfer, renamed Mummichog.gtf
 
 
-### Extract gene_id and gene_name to create mapping table 
+        ### Extract gene_id and gene_name to create mapping table 
 
-# Read the GTF file as a plain text table
-gtf_lines <- readLines("Mummichog.gtf")
+            # Read the GTF file as a plain text table
+                #gtf_lines <- readLines("Mummichog.gtf")
 
-# Filter lines that describe genes
-gene_lines <- gtf_lines[grepl("\tgene\t", gtf_lines)]
+            # Filter lines that describe genes
+                #gene_lines <- gtf_lines[grepl("\tgene\t", gtf_lines)]
 
-# Extract gene_id and gene_name using regular expressions
-gene_info <- do.call(rbind, lapply(gene_lines, function(line) {
-  gene_id <- sub('.*gene_id "([^"]+)".*', '\\1', line)
-  gene_name <- if (grepl('gene_name "', line)) {
-    sub('.*gene_name "([^"]+)".*', '\\1', line)
-  } else {
-    NA  # If gene_name doesn't exist
-  }
-  return(data.frame(gene_id = gene_id, gene_name = gene_name, stringsAsFactors = FALSE))
-}))
+        # Extract gene_id and gene_name using regular expressions
+                #gene_info <- do.call(rbind, lapply(gene_lines, function(line) {
+                #gene_id <- sub('.*gene_id "([^"]+)".*', '\\1', line)
+                #gene_name <- if (grepl('gene_name "', line)) {
+                    #sub('.*gene_name "([^"]+)".*', '\\1', line)
+                     # } else {
+                     # NA  # If gene_name doesn't exist
+                     # }
+                     # return(data.frame(gene_id = gene_id, gene_name = gene_name, stringsAsFactors = FALSE))
+                     #}))
 
-# Remove duplicates
-gene_info <- gene_info[!duplicated(gene_info$gene_id), ]
+        # Remove duplicates
+            #gene_info <- gene_info[!duplicated(gene_info$gene_id), ]
 
-# Save to CSV if you want
-write.csv(gene_info, "gene_id_to_gene_name_mapping.csv", row.names = FALSE)
-
-
-### Long Bayou (induced when exposed to tide+runoff)
-gene_ids_backloaded_LB <- sub("^gene:", "", names(backloaded_for_LB))
-backloaded_for_LB <- data.frame(
-  gene_id = gene_ids_backloaded_LB,
-  expression = as.numeric(backloaded_for_LB)
-)
-annotated_LB_backloaded <- merge(backloaded_for_LB, gene_info, by = "gene_id", all.x = TRUE)
-write.csv(annotated_LB_backloaded, "annotated_backloaded_LB.csv", row.names = FALSE)
-
-head(annotated_LB_backloaded)
-             #gene_id gene_id.y
-  #1 ENSFHEG00000006314      <NA>
-  #2 ENSFHEG00000008149      <NA>
-  #3 ENSFHEG00000016601      <NA>
+        # Save to CSV if you want
+            #write.csv(gene_info, "gene_id_to_gene_name_mapping.csv", row.names = FALSE)
 
 
-### Weakley Bayou (induced in LB when exposed to WB control "tide_runoff")
-gene_ids_LB_in_WB <- sub("^gene:", "", names(backloaded_for_WB))
-backloaded_for_WB <- data.frame(
-  gene_id = gene_ids_backloaded_WB,
-  expression = as.numeric(backloaded_for_WB)
-)
-annotated_LB_in_WB <- merge(backloaded_df_LB_in_WB, gene_info, by = "gene_id", all.x = TRUE)
-write.csv(annotated_WB_backloaded, "annotated_backloaded_WB.csv", row.names = FALSE)
+# Read in your existing gene annotation CSV
+gene_map <- read.csv("gene_id_to_gene_name_mapping.csv", stringsAsFactors = FALSE)
+
+# Read in backloaded gene CSVs
+backloaded_LB <- read.csv("LB_backloaded.csv", stringsAsFactors = FALSE, header = TRUE)
+backloaded_WB <- read.csv("WB_backloaded.csv", stringsAsFactors = FALSE, header = TRUE)
+
+# Remove the first column and name the backloaded CSVs column to gene_id (it is just labeled "x" currently)
+backloaded_LB <- backloaded_LB["x"]
+colnames(backloaded_LB) <- "gene_id"
+backloaded_WB <- backloaded_WB["x"]
+colnames(backloaded_WB) <- "gene_id"
+
+#Edit list to remove the "gene:" prefix so that columns will merge correctly downstream
+backloaded_LB$gene_id <- sub("^gene:", "", backloaded_LB$gene_id)
+head(backloaded_LB)
+        #ok
+backloaded_WB$gene_id <- sub("^gene:", "", backloaded_WB$gene_id)
+head(backloaded_WB)
+        #ok
+
+# Merge to get gene names and descriptions (if available)
+annotated_LB <- merge(backloaded_LB, gene_map, by = "gene_id", all.x = TRUE)
+annotated_WB <- merge(backloaded_WB, gene_map, by = "gene_id", all.x = TRUE)
+
+# Save annotated files
+write.csv(annotated_LB, "annotated_backloaded_LB.csv", row.names = FALSE)
+write.csv(annotated_WB, "annotated_backloaded_WB.csv", row.names = FALSE)
 
 
-head(annotated_WB_backloaded)
-                #gene_id gene_id.y
-    #1  ENSFHEG00000000626      <NA>
-    #2  ENSFHEG00000003293      <NA>
-    #3  ENSFHEG00000003544      <NA>
-    #4  ENSFHEG00000007932      <NA>
-    #5  ENSFHEG00000009196      <NA>
-    #6  ENSFHEG00000009231      <NA>
-    #7  ENSFHEG00000009502      <NA>
-    #8  ENSFHEG00000009514      <NA>
-    #9  ENSFHEG00000009823      <NA>
-    #10 ENSFHEG00000012277      <NA>
-    #11 ENSFHEG00000012294      <NA>
-    #12 ENSFHEG00000013510      <NA>
-    #13 ENSFHEG00000015691      <NA>
-    #14 ENSFHEG00000017456      <NA>
-    #15 ENSFHEG00000019924      <NA>
-    #16 ENSFHEG00000023008      <NA>
+
+
 
 #########End of frontloading-backloading analysis#########
