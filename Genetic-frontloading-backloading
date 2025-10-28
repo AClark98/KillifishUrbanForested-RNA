@@ -328,7 +328,7 @@ pheatmap(expr_matrix,
          color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
          main = "WB Backloaded Genes Expression (WT)")
 
-##########Frontloading gene candidates in 1x
+##########Frontloading gene candidates in >=1x
 
 ## Heatmap for LB backloaded genes across all samples
 genes_to_plot <- LB_genes_frontloaded_in_WB  
@@ -362,7 +362,7 @@ pheatmap(expr_matrix,
          main = "LB frontloaded genes (LT) 1x")
 
 
-##########Frontloading gene candidates in 2x
+##########Frontloading gene candidates in >=1.2x
 
 
 
