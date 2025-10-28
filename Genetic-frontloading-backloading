@@ -313,7 +313,7 @@ pheatmap(expr_matrix,
          show_rownames = TRUE,
          show_colnames = TRUE,
          color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
-         main = "LB Backloaded Genes Expression")
+         main = "LB Backloaded Genes Expression (LTR)")
 
 ###Heatmap for WB backloaded genes across all samples
     genes_to_plot <- backloaded_for_WB  
@@ -326,7 +326,7 @@ pheatmap(expr_matrix,
          show_rownames = TRUE,
          show_colnames = TRUE,
          color = colorRampPalette(c("blue", "white", "firebrick3"))(50),
-         main = "LB Backloaded Genes Expression")
+         main = "WB Backloaded Genes Expression (WT)")
 
 
 
