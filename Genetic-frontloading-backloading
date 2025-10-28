@@ -101,8 +101,8 @@ summary(LB_frontloaded)
 
 
 # Mean frontloaded expression relative to own home
-LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])
-WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
+LB_home_expr <- rowMeans(vst_counts[backloaded_for_LB, LB_control_samples, drop=FALSE])        #for each gene that was backloaded in LB, what's its mean expression in LB control (tide)?
+WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])        #for each gene that was backloaded in WB, what's its mean expression in WB control (tide+runoff)?
 
 frontload_ratio_WB <- mean(WB_frontloaded) / mean(LB_home_expr)
 frontload_ratio_LB <- mean(LB_frontloaded) / mean(WB_home_expr)
@@ -125,9 +125,9 @@ WB_frontloaded_in_LB <- rowMeans(vst_counts[backloaded_for_WB, LB_control_sample
 # Combine for boxplot
 expr_matrix <- list(
   "LB home" = LB_home_expr,                                                #LB home expression
-  "LB in WB" = LB_frontloaded_in_WB,                                       #WB frontloaded
+  "LB in WB" = LB_frontloaded_in_WB,                                       #WB frontloaded;are these LB backloaded genes frontloaded in WB?
   "WB home" = WB_home_expr,                                                #WB home expression
-  "WB in LB" = WB_frontloaded_in_LB                                        #LB frontloaded
+  "WB in LB" = WB_frontloaded_in_LB                                        #LB frontloaded;#are these WB backloaded genes frontloaded in LB?
 )
 
 # Boxplot
@@ -156,9 +156,9 @@ abline(h = median(WB_home_expr), col = "red", lty = 2)
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1]
 WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 1]
 
-length(LB_genes_frontloaded_in_WB)
+length(LB_genes_frontloaded_in_WB) #WB frontloaded genes
     #3
-length(WB_genes_frontloaded_in_LB)
+length(WB_genes_frontloaded_in_LB) #LB frontloaded genes
     #14
 
     ### genes are present at the baseline expression level
