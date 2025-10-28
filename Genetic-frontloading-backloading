@@ -181,6 +181,9 @@ length(LB_genes_frontloaded_in_WB)
 length(WB_genes_frontloaded_in_LB)
     #1
 
+WB_genes_frontloaded_in_LB    #show the 1 gene to survive a more stingent frontloading threshold 
+    #[1] "gene:ENSFHEG00000007932"
+
     ### minimal anticipatory expression; most candidate genes for frontloading have equal or around equal expression
 
 # Define frontloaded genes as having expression ≥ 2× own home (a higher baseline expression)
