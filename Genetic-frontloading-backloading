@@ -261,6 +261,7 @@ colnames(backloaded_WB) <- "gene_id"
 #Edit list to remove the "gene:" prefix so that columns will merge correctly downstream
 backloaded_LB$gene_id <- sub("^gene:", "", backloaded_LB$gene_id)
 head(backloaded_LB)
+        #from "gene:ENSFHEG00000006314" to "ENSFHEG00000006314"
         #ok
 backloaded_WB$gene_id <- sub("^gene:", "", backloaded_WB$gene_id)
 head(backloaded_WB)
