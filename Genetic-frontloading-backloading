@@ -263,6 +263,30 @@ annotated_WB <- merge(backloaded_WB, gene_map, by = "gene_id", all.x = TRUE)
 write.csv(annotated_LB, "annotated_backloaded_LB.csv", row.names = FALSE)
 write.csv(annotated_WB, "annotated_backloaded_WB.csv", row.names = FALSE)
 
+annotated_LB
+             #gene_id gene_name
+#1 ENSFHEG00000006314    capn12
+#2 ENSFHEG00000008149      <NA>
+#3 ENSFHEG00000016601     MPEG1
+
+annotated_WB
+             #gene_id gene_name
+#1  ENSFHEG00000000626    fabp7b
+#2  ENSFHEG00000003293      <NA>
+#3  ENSFHEG00000003544     tdrkh
+#4  ENSFHEG00000007932      <NA>
+#5  ENSFHEG00000009196    gprc6a
+#6  ENSFHEG00000009231      <NA>
+#7  ENSFHEG00000009502      <NA>
+#8  ENSFHEG00000009514     dnph1
+#9  ENSFHEG00000009823     uchl1
+#10 ENSFHEG00000012277      <NA>
+#11 ENSFHEG00000012294      <NA>
+#12 ENSFHEG00000013510      <NA>
+#13 ENSFHEG00000015691    knstrn
+#14 ENSFHEG00000017456      <NA>
+#15 ENSFHEG00000019924      <NA>
+#16 ENSFHEG00000023008      <NA>
 
 
 
