@@ -362,7 +362,7 @@ pheatmap(expr_matrix,
          main = "LB frontloaded genes (LT) 1x")
 
 
-####Can't produce heatmaps for frontloading candidates >=1.2x because there is not 2 or more genes for clustering
+####Can't produce heatmaps for frontloading candidates >=1.2x because there are not 2 or more genes available for clustering
 #### >=2x produced 0 genes for both so no heatmaps
 
 
