@@ -169,7 +169,7 @@ WB_genes_frontloaded_in_LB    #listing genes that are potentially frontloaded si
    
 
 # Define frontloaded genes as having expression ≥ 1.2× own home (20% higher than home expression)        #at least 20% increase in expression
-LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1.2]
+LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1.2]                #NOTE: this may be confusing but these are not log2FoldChanges here. These are linear expression ratios based on VST so 2x higher here does not mean log2FoldChange of 2 which would be 4. It just simply means double the expression here. 
 WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 1.2]
 
 length(LB_genes_frontloaded_in_WB)
