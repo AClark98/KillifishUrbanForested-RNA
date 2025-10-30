@@ -149,7 +149,7 @@ abline(h = median(WB_home_expr), col = "red", lty = 2)
             ####WB_home_expr <- rowMeans(vst_counts[backloaded_for_WB, WB_control_samples, drop=FALSE])
 
 
-# Define frontloaded genes as having expression ≥ 1× own home (baseline expression)             #at least equal expression
+# Define frontloaded genes as having expression ≥ 1× own home (baseline expression)                        #at least equal expression
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 1]
 WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 1]
 
@@ -182,7 +182,7 @@ WB_genes_frontloaded_in_LB    #show the 1 gene to survive a more stingent frontl
 
     ### minimal anticipatory expression; most candidate genes for frontloading have equal or around equal expression
 
-# Define frontloaded genes as having expression ≥ 2× own home (a higher baseline expression)        #at least double the expression
+# Define frontloaded genes as having expression ≥ 2× own home (a higher baseline expression)            #at least double the expression
 LB_genes_frontloaded_in_WB <- backloaded_for_LB[LB_frontload_in_WB / LB_home_expr >= 2]
 WB_genes_frontloaded_in_LB <- backloaded_for_WB[WB_frontload_in_LB / WB_home_expr >= 2]
 
