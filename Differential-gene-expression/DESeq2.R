@@ -37,7 +37,6 @@ gulfkillifishcoldata<-read.csv("sample_info_GKF.csv", header = TRUE, row.names =
 # to potential errors or misinterpretations in the analysis.
 gulfkillifishcoldata$treatment<-as.factor(gulfkillifishcoldata$treatment)
 gulfkillifishcoldata$origin<-as.factor(gulfkillifishcoldata$origin)
-gulfkillifishcoldata$tank<-as.factor(gulfkillifishcoldata$tank)
 
 # Check that the columns and rows have the same name
 all(rownames(gulfkillifishcoldata) == colnames(gulfkillifishcountdata))
