@@ -176,6 +176,42 @@ summary(VSD.originandtreatment.subset)
 [1] "DESeqTransform object of length 112 with 24 metadata columns"
 plotPCA(VSD.originandtreatment.subset, intgroup = c("origin", "treatment"))
 gulfkillifish_PCA_o_t_dim<-plotPCA(VSD.originandtreatment.subset, intgroup = c("origin", "treatment"), returnData = T) #save
+                                    #   # #####HERE I NEED TO ADD SAMPLE AND TANK INFORMATION TO LOOK FOR IMPACTS OF TANK EFFECTS (looking to see if all individuals from the sample tank clusters together - which is what we don't want and to make it a supplemental PCA)
+                                    #   # # add tank info from metadata
+                                    #   gulfkillifish_PCA_o_t_dim$tank <- gulfkillifishcoldata$tank
+                                    #   # library(ggrepel)
+                                    # 
+                                    # 
+                                    #     # # Add sample names
+                                    #     gulfkillifish_PCA_o_t_dim$sample <- rownames(gulfkillifish_PCA_o_t_dim)
+                                    #     # # Add tank information from metadata
+                                    #     gulfkillifish_PCA_o_t_dim$tank <- gulfkillifishcoldata[
+                                    #     rownames(gulfkillifish_PCA_o_t_dim),
+                                    #       "tank"
+                                    #      ]
+                                    #     gulfkillifish_PCA_o_t_dim$label <- paste(
+                                    #     gulfkillifish_PCA_o_t_dim$sample,
+                                    #     "T",
+                                    #     gulfkillifish_PCA_o_t_dim$tank,
+                                    #     sep=""
+                                    #     )
+                                    # 
+                                    # 
+                                    # ggplot(gulfkillifish_PCA_o_t_dim,
+                                    #        aes(x = PC1,
+                                    #           y = PC2,
+                                    #             color = origin,
+                                    #             shape = treatment)) +
+                                    #    geom_point(size = 3) +
+                                    #    geom_text_repel(aes(label = tank), size = 3) +
+                                    #   scale_color_manual(values = c(
+                                    #                      "long_bayou_F" = "#2196F4",
+                                    #                      "weakley_bayou_U" = "#C41001")) +
+                                    #    labs(x = "PC1: 31% variance",
+                                    #         y = "PC2: 13% variance",
+                                    #         title = "Sample Distance Matrix by Origin and Treatment") +
+                                    #    theme_minimal()
+
 install.packages("cluster")
 library(cluster)
 install.packages("factoextra")
